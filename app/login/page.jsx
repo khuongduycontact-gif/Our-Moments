@@ -33,7 +33,7 @@ export default function LoginPage() {
       router.replace("/");
     } catch (err) {
       if (err.code !== "auth/popup-closed-by-user") {
-        setError(mapFirebaseError(err.code));
+        setError(`${mapFirebaseError(err.code)} (${err.code || err.message})`);
       }
     } finally {
       setGoogleSubmitting(false);
