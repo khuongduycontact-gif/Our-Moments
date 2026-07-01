@@ -25,25 +25,42 @@ export default function LoginPage() {
     }
   }, [authError, setAuthError]);
 
+  // async function handleGoogleLogin() {
+  //   setError("");
+  //   setGoogleSubmitting(true);
+
+  //   try {
+  //     await loginWithGoogle();
+
+  //     // Chỉ chuyển trang khi dùng Popup (PC)
+  //     if (!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+  //       router.replace("/");
+  //     }
+  //   } catch (err) {
+  //     if (err.code !== "auth/popup-closed-by-user") {
+  //       setError(mapFirebaseError(err.code));
+  //     }
+  //   } finally {
+  //     setGoogleSubmitting(false);
+  //   }
+  // }
   async function handleGoogleLogin() {
-    setError("");
-    setGoogleSubmitting(true);
+  setError("");
+  setGoogleSubmitting(true);
 
-    try {
-      await loginWithGoogle();
-
-      // Chỉ chuyển trang khi dùng Popup (PC)
-      if (!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
-        router.replace("/");
-      }
-    } catch (err) {
-      if (err.code !== "auth/popup-closed-by-user") {
-        setError(mapFirebaseError(err.code));
-      }
-    } finally {
-      setGoogleSubmitting(false);
+  try {
+    await loginWithGoogle();
+    // Sau khi popup thành công, Next.js sẽ tự nhận diện user tại useEffect 
+    // và điều hướng bằng router.replace("/"). Tuy nhiên thêm ở đây để chắc chắn:
+    router.replace("/");
+  } catch (err) {
+    if (err.code !== "auth/popup-closed-by-user") {
+      setError(mapFirebaseError(err.code));
     }
+  } finally {
+    setGoogleSubmitting(false);
   }
+}
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-brand-50 to-white px-4">

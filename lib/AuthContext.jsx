@@ -107,14 +107,20 @@ useEffect(() => {
     if (unsubscribeFn) unsubscribeFn();
   };
 }, []);
+  // const loginWithGoogle = () => {
+  //   const provider = new GoogleAuthProvider();
+  //   if (isMobileDevice()) {
+  //     // Trên mobile: chuyển hướng cả trang thay vì mở popup
+  //     return signInWithRedirect(auth, provider);
+  //   }
+  //   return signInWithPopup(auth, provider);
+  // };
   const loginWithGoogle = () => {
-    const provider = new GoogleAuthProvider();
-    if (isMobileDevice()) {
-      // Trên mobile: chuyển hướng cả trang thay vì mở popup
-      return signInWithRedirect(auth, provider);
-    }
-    return signInWithPopup(auth, provider);
-  };
+  const provider = new GoogleAuthProvider();
+  // Khuyên khích dùng hẳn signInWithPopup cho cả PC lẫn Mobile 
+  // để tránh việc redirect làm reload và mất trạng thái trên điện thoại.
+  return signInWithPopup(auth, provider);
+};
 
   const logout = () => signOut(auth);
 
