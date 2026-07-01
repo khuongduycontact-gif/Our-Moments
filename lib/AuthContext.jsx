@@ -32,30 +32,81 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState("");
 
-  useEffect(() => {
-    // Bắt lỗi (nếu có) từ luồng đăng nhập redirect trên mobile
-    getRedirectResult(auth).catch((err) => {
-      if (err?.code && err.code !== "auth/no-current-user") {
-        console.error(err);
-        setAuthError("Có lỗi khi đăng nhập, vui lòng thử lại.");
-      }
-    });
+  // useEffect(() => {
+  //   // Bắt lỗi (nếu có) từ luồng đăng nhập redirect trên mobile
+  //   getRedirectResult(auth).catch((err) => {
+  //     if (err?.code && err.code !== "auth/no-current-user") {
+  //       console.error(err);
+  //       setAuthError("Có lỗi khi đăng nhập, vui lòng thử lại.");
+  //     }
+  //   });
 
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      if (u && !ALLOWED_EMAILS.includes(u.email)) {
-        // Đăng nhập đúng nhưng không phải tài khoản được phép -> đăng xuất ngay
-        await signOut(auth);
-        setUser(null);
-        setAuthError("Tài khoản này không có quyền truy cập.");
-        setLoading(false);
-        return;
+  //   const unsub = onAuthStateChanged(auth, async (u) => {
+  //     if (u && !ALLOWED_EMAILS.includes(u.email)) {
+  //       // Đăng nhập đúng nhưng không phải tài khoản được phép -> đăng xuất ngay
+  //       await signOut(auth);
+  //       setUser(null);
+  //       setAuthError("Tài khoản này không có quyền truy cập.");
+  //       setLoading(false);
+  //       return;
+  //     }
+  //     setUser(u);
+  //     setLoading(false);
+  //   });
+  //   return () => unsub();
+  // }, []);
+// Thay thế đoạn useEffect cũ trong AuthContext.jsx bằng đoạn này:
+useEffect(() => {
+  let isMounted = true;
+
+  const handleRedirectAndAuth = async () => {
+    try {
+      // 1. Chờ xử lý kết quả Redirect trước (Quan trọng nhất trên Mobile)
+      if (isMobileDevice()) {
+        await getRedirectResult(auth);
       }
-      setUser(u);
+    } catch (err) {
+      if (err?.code && err.code !== "auth/no-current-user") {
+        console.error("Redirect Error:", err);
+        if (isMounted) setAuthError("Có lỗi khi đăng nhập, vui lòng thử lại.");
+      }
+    }
+
+    // 2. Sau khi xử lý xong redirect, mới lắng nghe trạng thái Auth
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (!isMounted) return;
+
+      if (u) {
+        // Kiểm tra email hợp lệ
+        if (u.email && ALLOWED_EMAILS.includes(u.email)) {
+          setUser(u);
+        } else {
+          // Nếu email không hợp lệ, đăng xuất
+          await signOut(auth);
+          setUser(null);
+          setAuthError("Tài khoản này không có quyền truy cập.");
+        }
+      } else {
+        setUser(null);
+      }
+      
+      // Chỉ tắt loading sau khi mọi thứ đã xác định rõ ràng
       setLoading(false);
     });
-    return () => unsub();
-  }, []);
 
+    return unsub;
+  };
+
+  let unsubscribeFn;
+  handleRedirectAndAuth().then((unsub) => {
+    unsubscribeFn = unsub;
+  });
+
+  return () => {
+    isMounted = false;
+    if (unsubscribeFn) unsubscribeFn();
+  };
+}, []);
   const loginWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     if (isMobileDevice()) {
