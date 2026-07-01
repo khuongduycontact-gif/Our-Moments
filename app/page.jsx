@@ -164,7 +164,7 @@ function HomeContent() {
             href="/albums"
             className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
           >
-            Xem tất cả album →
+            Tất cả album →
           </Link>
         </div>
 
