@@ -29,12 +29,13 @@ export default function LoginPage() {
     setError("");
     setGoogleSubmitting(true);
     try {
-      // signInWithRedirect sẽ chuyển hẳn trang sang Google, không trả kết quả ngay.
-      // Sau khi đăng nhập xong, Google tự chuyển hướng lại trang này và
-      // AuthContext sẽ xử lý kết quả (getRedirectResult) rồi tự chuyển sang trang chủ.
       await loginWithGoogle();
+      router.replace("/");
     } catch (err) {
-      setError(mapFirebaseError(err.code));
+      if (err.code !== "auth/popup-closed-by-user") {
+        setError(mapFirebaseError(err.code));
+      }
+    } finally {
       setGoogleSubmitting(false);
     }
   }
@@ -99,10 +100,11 @@ function GoogleIcon() {
 
 function mapFirebaseError(code) {
   switch (code) {
-    case "auth/unauthorized-domain":
-      return "Domain này chưa được cho phép trong Firebase (Authentication > Settings > Authorized domains).";
-    case "auth/network-request-failed":
-      return "Lỗi kết nối mạng, vui lòng kiểm tra internet và thử lại.";
+    case "auth/popup-blocked":
+      return "Trình duyệt đã chặn cửa sổ đăng nhập, vui lòng cho phép popup.";
+    case "auth/cancelled-popup-request":
+    case "auth/popup-closed-by-user":
+      return "Bạn đã đóng cửa sổ đăng nhập.";
     default:
       return "Có lỗi xảy ra, vui lòng thử lại.";
   }

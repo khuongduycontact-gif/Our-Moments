@@ -3,23 +3,29 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   onAuthStateChanged,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
   signOut,
-  setPersistence,
-  browserLocalPersistence,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
 const AuthContext = createContext(null);
 
-// Chỉ những email trong danh sách này mới được phép vào ứng dụng
-// Thêm/xoá email bằng cách sửa mảng dưới đây.
+// Chỉ những email này mới được phép vào ứng dụng
 const ALLOWED_EMAILS = [
   "duynk.contact@gmail.com",
-  // "email-thu-2@gmail.com", // <-- thêm email thứ 2 vào đây
+  "celinenguyen2207@gmail.com",
+  "thuuyen22072002@gmail.com",
 ];
+
+// Trên điện thoại, signInWithPopup hay bị lỗi "missing initial state" do
+// trình duyệt mobile chặn cookie/state của popup -> dùng redirect thay thế.
+function isMobileDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -27,15 +33,12 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState("");
 
   useEffect(() => {
-    // Ghi nhớ đăng nhập giữa các lần tải trang - quan trọng với luồng
-    // signInWithRedirect trên di động (trang bị tải lại sau khi quay về từ Google).
-    setPersistence(auth, browserLocalPersistence).catch(() => {});
-
-    // Xử lý kết quả trả về ngay sau khi Google chuyển hướng lại trang web
-    // (bắt buộc phải gọi hàm này khi dùng signInWithRedirect).
+    // Bắt lỗi (nếu có) từ luồng đăng nhập redirect trên mobile
     getRedirectResult(auth).catch((err) => {
-      console.error("Lỗi khi xử lý kết quả đăng nhập Google:", err);
-      setAuthError("Đăng nhập thất bại, vui lòng thử lại.");
+      if (err?.code && err.code !== "auth/no-current-user") {
+        console.error(err);
+        setAuthError("Có lỗi khi đăng nhập, vui lòng thử lại.");
+      }
     });
 
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -55,11 +58,11 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = () => {
     const provider = new GoogleAuthProvider();
-    // Gợi ý sẵn tài khoản đầu tiên trong danh sách được phép
-    provider.setCustomParameters({ login_hint: ALLOWED_EMAILS[0] });
-    // Dùng redirect (chuyển hẳn sang trang đăng nhập Google) thay vì popup,
-    // vì popup rất dễ bị chặn/lỗi trên trình duyệt di động.
-    return signInWithRedirect(auth, provider);
+    if (isMobileDevice()) {
+      // Trên mobile: chuyển hướng cả trang thay vì mở popup
+      return signInWithRedirect(auth, provider);
+    }
+    return signInWithPopup(auth, provider);
   };
 
   const logout = () => signOut(auth);
