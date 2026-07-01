@@ -251,13 +251,13 @@ function AddContent() {
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value.slice(0, 200))}
+              onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
               rows={3}
               placeholder="Viết một chút gì đó về khoảnh khắc này..."
               className="w-full resize-none rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             />
             <p className="mt-1 text-right text-xs text-slate-400">
-              {description.length}/200
+              {description.length}/2000 ký tự
             </p>
           </div>
 
