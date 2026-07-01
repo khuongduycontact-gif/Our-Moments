@@ -28,9 +28,14 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setError("");
     setGoogleSubmitting(true);
+
     try {
       await loginWithGoogle();
-      router.replace("/");
+
+      // Chỉ chuyển trang khi dùng Popup (PC)
+      if (!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+        router.replace("/");
+      }
     } catch (err) {
       if (err.code !== "auth/popup-closed-by-user") {
         setError(mapFirebaseError(err.code));

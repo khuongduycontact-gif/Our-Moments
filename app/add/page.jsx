@@ -8,6 +8,7 @@ import DatePicker from "@/components/DatePicker";
 import { useAuth } from "@/lib/AuthContext";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 import { createMoment } from "@/lib/moments";
+import Link from "next/link";
 
 function AddContent() {
   const { user } = useAuth();
@@ -136,6 +137,12 @@ function AddContent() {
     <div className="min-h-screen bg-brand-50 px-4 py-10">
       <Toast toast={toast} />
       <div className="mx-auto max-w-xl">
+        <Link
+            href="/"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm"
+          >
+            ←
+        </Link>
         <div className="mb-6 text-center">
           <h1 className="font-display text-2xl font-bold text-brand-700">
             Thêm album mới
