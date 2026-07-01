@@ -156,17 +156,19 @@ function HomeContent() {
 
       {/* Latest moments */}
       <section className="mx-auto max-w-5xl px-4 pb-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display flex items-center gap-2 text-lg font-semibold text-brand-700">
-            🎞 Khoảnh khắc mới nhất 💜
-          </h2>
-          <Link
-            href="/albums"
-            className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
-          >
-            Tất cả album →
-          </Link>
-        </div>
+<div className="mb-4 flex flex-row items-center justify-between gap-4 w-full">
+  <h2 className="font-display flex items-center gap-2 text-base md:text-lg font-semibold text-brand-700 min-w-0 truncate">
+    <span>🎞</span> 
+    <span className="truncate">Khoảnh khắc mới nhất 💜</span>
+  </h2>
+  
+  <Link
+    href="/albums"
+    className="shrink-0 rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
+  >
+    Tất cả album →
+  </Link>
+</div>
 
         {loadingMoments ? (
           <p className="text-sm text-slate-400">Đang tải khoảnh khắc...</p>
