@@ -6,7 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import MomentCard from "@/components/MomentCard";
 import { getAllMoments } from "@/lib/moments";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 8;
 
 function AllAlbumsContent() {
   const [moments, setMoments] = useState([]);
