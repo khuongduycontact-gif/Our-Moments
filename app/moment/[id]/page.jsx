@@ -45,6 +45,8 @@ function MomentDetail() {
 
   // Xem ảnh/video theo dạng carousel khi không ở chế độ chỉnh sửa
   const [viewIndex, setViewIndex] = useState(0);
+  // Theo dõi ảnh/video hiện tại đã tải xong chưa, để hiện khung loading đẹp
+  const [mediaReady, setMediaReady] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -52,6 +54,12 @@ function MomentDetail() {
   const [toast, setToast] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // Theo dõi các thumbnail đã tải xong (để hiện hiệu ứng mờ dần khi load)
+  const [loadedThumbs, setLoadedThumbs] = useState(() => new Set());
+
+  function markThumbLoaded(key) {
+    setLoadedThumbs((prev) => new Set(prev).add(key));
+  }
 
   const today = getToday();
 
@@ -74,6 +82,11 @@ function MomentDetail() {
     const t = setTimeout(() => setToast(null), 4000);
     return () => clearTimeout(t);
   }, [toast]);
+
+  // Mỗi khi chuyển sang ảnh/video khác thì hiện lại khung loading
+  useEffect(() => {
+    setMediaReady(false);
+  }, [viewIndex, moment?.id]);
 
   const totalMediaCount = existingMedia.length + newItems.length;
 
@@ -267,21 +280,37 @@ function MomentDetail() {
 
         {!editing ? (
           <>
-            {/* Media viewer (carousel nếu có nhiều mục) */}
-            <div className="mb-3 overflow-hidden rounded-2xl bg-black shadow-sm">
+            {/* Media viewer (carousel nếu có nhiều mục) - luôn cùng 1 kích thước khung */}
+            <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-2xl bg-black shadow-sm">
+              {/* Khung loading đẹp, hiện khi ảnh/video chưa tải xong */}
+              {!mediaReady && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-brand-100 to-brand-50">
+                  <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-500" />
+                  <p className="text-xs font-medium text-brand-400">
+                    Đang tải {currentView?.type === "video" ? "video" : "ảnh"}...
+                  </p>
+                </div>
+              )}
+
               {currentView?.type === "video" ? (
                 <video
                   key={currentView.url}
                   src={currentView.url}
-                  className="w-full max-h-[70vh]"
+                  className={`h-full w-full object-contain transition-opacity duration-300 ${
+                    mediaReady ? "opacity-100" : "opacity-0"
+                  }`}
                   controls
+                  onLoadedData={() => setMediaReady(true)}
                 />
               ) : (
                 <img
                   key={currentView?.url}
                   src={currentView?.url}
                   alt={moment.title}
-                  className="w-full max-h-[70vh] object-contain"
+                  className={`h-full w-full object-contain transition-opacity duration-300 ${
+                    mediaReady ? "opacity-100" : "opacity-0"
+                  }`}
+                  onLoad={() => setMediaReady(true)}
                 />
               )}
             </div>
@@ -368,35 +397,52 @@ function MomentDetail() {
               </label>
 
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {existingMedia.map((mediaItem, index) => (
-                  <div
-                    key={`existing-${index}-${mediaItem.url}`}
-                    className="group relative aspect-square overflow-hidden rounded-lg bg-brand-100"
-                  >
-                    {mediaItem.type === "video" ? (
-                      <video src={mediaItem.url} className="h-full w-full object-cover" muted />
-                    ) : (
-                      <img
-                        src={mediaItem.url}
-                        alt="Ảnh trong album"
-                        className="h-full w-full object-cover"
-                      />
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeExistingMedia(index)}
-                      aria-label="Xoá mục này"
-                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                {existingMedia.map((mediaItem, index) => {
+                  const thumbKey = `existing-${index}-${mediaItem.url}`;
+                  const isLoaded = loadedThumbs.has(thumbKey);
+                  return (
+                    <div
+                      key={thumbKey}
+                      className="group relative aspect-square overflow-hidden rounded-lg bg-brand-100"
                     >
-                      ✕
-                    </button>
-                    {mediaItem.type === "video" && (
-                      <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
-                        🎬
-                      </span>
-                    )}
-                  </div>
-                ))}
+                      {!isLoaded && (
+                        <div className="absolute inset-0 animate-pulse bg-brand-100" />
+                      )}
+                      {mediaItem.type === "video" ? (
+                        <video
+                          src={mediaItem.url}
+                          className={`h-full w-full object-cover transition-opacity duration-300 ${
+                            isLoaded ? "opacity-100" : "opacity-0"
+                          }`}
+                          muted
+                          onLoadedData={() => markThumbLoaded(thumbKey)}
+                        />
+                      ) : (
+                        <img
+                          src={mediaItem.url}
+                          alt="Ảnh trong album"
+                          className={`h-full w-full object-cover transition-opacity duration-300 ${
+                            isLoaded ? "opacity-100" : "opacity-0"
+                          }`}
+                          onLoad={() => markThumbLoaded(thumbKey)}
+                        />
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeExistingMedia(index)}
+                        aria-label="Xoá mục này"
+                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                      >
+                        ✕
+                      </button>
+                      {mediaItem.type === "video" && (
+                        <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+                          🎬
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
 
                 {newItems.map((it) => (
                   <div
