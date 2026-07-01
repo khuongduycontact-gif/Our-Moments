@@ -77,6 +77,7 @@ function MomentDetail() {
 
   const totalMediaCount = existingMedia.length + newItems.length;
 
+  // Không giới hạn dung lượng file - nhận mọi file ảnh/video được chọn
   function addFiles(fileList) {
     const items = fileList.map((file) => ({
       id: `${file.name}-${file.size}-${file.lastModified}-${Math.random()

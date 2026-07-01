@@ -37,6 +37,7 @@ function AddContent() {
     setDate(iso);
   }
 
+  // Không giới hạn dung lượng file - nhận mọi file ảnh/video được chọn
   function addFiles(fileList) {
     const newItems = fileList.map((file) => ({
       id: `${file.name}-${file.size}-${file.lastModified}-${Math.random()
@@ -181,7 +182,7 @@ function AddContent() {
                 + Chọn ảnh/video từ thiết bị
               </button>
               <p className="mt-2 text-xs text-slate-400">
-                Hỗ trợ: JPG, PNG, HEIC, MP4 (tối đa 20MB mỗi file)
+                Hỗ trợ: JPG, PNG, HEIC, MP4 (không giới hạn dung lượng)
               </p>
             </div>
 
@@ -250,13 +251,13 @@ function AddContent() {
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
+              onChange={(e) => setDescription(e.target.value.slice(0, 200))}
               rows={3}
               placeholder="Viết một chút gì đó về khoảnh khắc này..."
               className="w-full resize-none rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             />
             <p className="mt-1 text-right text-xs text-slate-400">
-              {description.length}/2000
+              {description.length}/200
             </p>
           </div>
 
