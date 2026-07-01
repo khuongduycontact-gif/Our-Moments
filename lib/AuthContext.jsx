@@ -3,26 +3,23 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   onAuthStateChanged,
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
   signOut,
+  setPersistence,
+  browserLocalPersistence,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
 const AuthContext = createContext(null);
 
+// Chỉ những email trong danh sách này mới được phép vào ứng dụng
+// Thêm/xoá email bằng cách sửa mảng dưới đây.
 const ALLOWED_EMAILS = [
   "duynk.contact@gmail.com",
-  "celinenguyen2207@gmail.com",
-  "thuuyen22072002@gmail.com",
+  // "email-thu-2@gmail.com", // <-- thêm email thứ 2 vào đây
 ];
-
-function isMobileDevice() {
-  if (typeof navigator === "undefined") return false;
-  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -30,15 +27,20 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState("");
 
   useEffect(() => {
+    // Ghi nhớ đăng nhập giữa các lần tải trang - quan trọng với luồng
+    // signInWithRedirect trên di động (trang bị tải lại sau khi quay về từ Google).
+    setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+    // Xử lý kết quả trả về ngay sau khi Google chuyển hướng lại trang web
+    // (bắt buộc phải gọi hàm này khi dùng signInWithRedirect).
     getRedirectResult(auth).catch((err) => {
-      if (err?.code && err.code !== "auth/no-current-user") {
-        console.error(err);
-        setAuthError(`Lỗi đăng nhập: ${err.code || err.message}`);
-      }
+      console.error("Lỗi khi xử lý kết quả đăng nhập Google:", err);
+      setAuthError("Đăng nhập thất bại, vui lòng thử lại.");
     });
 
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (u && !ALLOWED_EMAILS.includes(u.email)) {
+        // Đăng nhập đúng nhưng không phải tài khoản được phép -> đăng xuất ngay
         await signOut(auth);
         setUser(null);
         setAuthError("Tài khoản này không có quyền truy cập.");
@@ -53,10 +55,11 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = () => {
     const provider = new GoogleAuthProvider();
-    if (isMobileDevice()) {
-      return signInWithRedirect(auth, provider);
-    }
-    return signInWithPopup(auth, provider);
+    // Gợi ý sẵn tài khoản đầu tiên trong danh sách được phép
+    provider.setCustomParameters({ login_hint: ALLOWED_EMAILS[0] });
+    // Dùng redirect (chuyển hẳn sang trang đăng nhập Google) thay vì popup,
+    // vì popup rất dễ bị chặn/lỗi trên trình duyệt di động.
+    return signInWithRedirect(auth, provider);
   };
 
   const logout = () => signOut(auth);
