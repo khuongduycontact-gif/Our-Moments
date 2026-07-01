@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import {
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
 } from "firebase/auth";
@@ -11,14 +13,19 @@ import { auth } from "./firebase";
 
 const AuthContext = createContext(null);
 
-// Chỉ những email trong danh sách này mới được phép vào ứng dụng
-// Thêm/xoá email bằng cách sửa mảng dưới đây.
+// Chỉ những email này mới được phép vào ứng dụng
 const ALLOWED_EMAILS = [
   "duynk.contact@gmail.com",
   "celinenguyen2207@gmail.com",
   "thuuyen22072002@gmail.com",
-  // "email-thu-2@gmail.com", // <-- thêm email thứ 2 vào đây
 ];
+
+// Trên điện thoại, signInWithPopup hay bị lỗi "missing initial state" do
+// trình duyệt mobile chặn cookie/state của popup -> dùng redirect thay thế.
+function isMobileDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -26,6 +33,14 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState("");
 
   useEffect(() => {
+    // Bắt lỗi (nếu có) từ luồng đăng nhập redirect trên mobile
+    getRedirectResult(auth).catch((err) => {
+      if (err?.code && err.code !== "auth/no-current-user") {
+        console.error(err);
+        setAuthError("Có lỗi khi đăng nhập, vui lòng thử lại.");
+      }
+    });
+
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (u && !ALLOWED_EMAILS.includes(u.email)) {
         // Đăng nhập đúng nhưng không phải tài khoản được phép -> đăng xuất ngay
@@ -43,8 +58,10 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = () => {
     const provider = new GoogleAuthProvider();
-    // Gợi ý sẵn tài khoản đầu tiên trong danh sách được phép
-    provider.setCustomParameters({ login_hint: ALLOWED_EMAILS[0] });
+    if (isMobileDevice()) {
+      // Trên mobile: chuyển hướng cả trang thay vì mở popup
+      return signInWithRedirect(auth, provider);
+    }
     return signInWithPopup(auth, provider);
   };
 
