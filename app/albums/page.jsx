@@ -8,16 +8,49 @@ import { getAllMoments } from "@/lib/moments";
 
 const PAGE_SIZE = 8;
 
+// Quy đổi giá trị thời gian của 1 moment về số mili-giây để so sánh.
+// Field chính thức lưu ngày là "date" (chuỗi ISO "YYYY-MM-DD", xem trang Thêm album).
+// Vẫn hỗ trợ thêm vài định dạng khác (Firestore Timestamp, Date, số mili-giây)
+// để phòng trường hợp dữ liệu cũ có field khác.
+function toMillis(value) {
+  if (!value) return 0;
+  if (typeof value.toDate === "function") return value.toDate().getTime();
+  if (typeof value.seconds === "number") return value.seconds * 1000;
+  if (value instanceof Date) return value.getTime();
+  const t = new Date(value).getTime();
+  return Number.isNaN(t) ? 0 : t;
+}
+
+// Lấy mốc thời gian của 1 moment, ưu tiên date (field chính thức) -> createdAt -> timestamp -> updatedAt
+function getMomentTime(m) {
+  return toMillis(m.date ?? m.createdAt ?? m.timestamp ?? m.updatedAt);
+}
+
+// Sắp xếp album theo thời gian. order: "newest" (mới nhất trước) hoặc "oldest" (cũ nhất trước)
+function sortMoments(items, order) {
+  const sign = order === "oldest" ? 1 : -1;
+  return [...items].sort((a, b) => sign * (getMomentTime(a) - getMomentTime(b)));
+}
+
 function AllAlbumsContent() {
-  const [moments, setMoments] = useState([]);
+  const [rawMoments, setRawMoments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState("newest"); // "newest" | "oldest"
 
   useEffect(() => {
     getAllMoments()
-      .then(setMoments)
+      .then(setRawMoments)
       .finally(() => setLoading(false));
   }, []);
+
+  const moments = sortMoments(rawMoments, sortOrder);
+
+  function handleSortChange(order) {
+    if (order === sortOrder) return;
+    setSortOrder(order);
+    setPage(1);
+  }
 
   const totalPages = Math.max(1, Math.ceil(moments.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -48,7 +81,7 @@ function AllAlbumsContent() {
           </h1>
           <Link
             href="/add"
-            className="flex h-9 items-center justify-center rounded-full bg-brand-500 px-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-600"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500 text-sm font-semibold text-white shadow-sm hover:bg-brand-600"
           >
             +
           </Link>
@@ -70,6 +103,32 @@ function AllAlbumsContent() {
           </div>
         ) : (
           <>
+            {/* Bộ lọc sắp xếp theo thời gian */}
+            <div className="mb-4 flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleSortChange("newest")}
+                className={`rounded-full px-4 py-1.5 text-xs font-medium shadow-sm transition ${
+                  sortOrder === "newest"
+                    ? "bg-brand-500 text-white"
+                    : "bg-white text-brand-600 hover:bg-brand-50"
+                }`}
+              >
+                Mới nhất
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSortChange("oldest")}
+                className={`rounded-full px-4 py-1.5 text-xs font-medium shadow-sm transition ${
+                  sortOrder === "oldest"
+                    ? "bg-brand-500 text-white"
+                    : "bg-white text-brand-600 hover:bg-brand-50"
+                }`}
+              >
+                Cũ nhất
+              </button>
+            </div>
+
             <p className="mb-3 text-center text-xs text-slate-400">
               Trang {safePage}/{totalPages} · {moments.length} album
             </p>
