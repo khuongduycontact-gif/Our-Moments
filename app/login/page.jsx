@@ -25,42 +25,22 @@ export default function LoginPage() {
     }
   }, [authError, setAuthError]);
 
-  // async function handleGoogleLogin() {
-  //   setError("");
-  //   setGoogleSubmitting(true);
-
-  //   try {
-  //     await loginWithGoogle();
-
-  //     // Chỉ chuyển trang khi dùng Popup (PC)
-  //     if (!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
-  //       router.replace("/");
-  //     }
-  //   } catch (err) {
-  //     if (err.code !== "auth/popup-closed-by-user") {
-  //       setError(mapFirebaseError(err.code));
-  //     }
-  //   } finally {
-  //     setGoogleSubmitting(false);
-  //   }
-  // }
   async function handleGoogleLogin() {
-  setError("");
-  setGoogleSubmitting(true);
-
-  try {
-    await loginWithGoogle();
-    // Sau khi popup thành công, Next.js sẽ tự nhận diện user tại useEffect 
-    // và điều hướng bằng router.replace("/"). Tuy nhiên thêm ở đây để chắc chắn:
-    router.replace("/");
-  } catch (err) {
-    if (err.code !== "auth/popup-closed-by-user") {
-      setError(mapFirebaseError(err.code));
+    setError("");
+    setGoogleSubmitting(true);
+    try {
+      // signInWithPopup mở popup đăng nhập Google, kết quả trả về ngay trong
+      // cùng 1 lần tải trang. Khi thành công, useEffect ở trên sẽ tự chuyển
+      // sang trang chủ (dựa vào state `user` cập nhật từ AuthContext).
+      await loginWithGoogle();
+    } catch (err) {
+      if (err.code !== "auth/cancelled-popup-request") {
+        setError(mapFirebaseError(err.code));
+      }
+    } finally {
+      setGoogleSubmitting(false);
     }
-  } finally {
-    setGoogleSubmitting(false);
   }
-}
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-brand-50 to-white px-4">
@@ -123,10 +103,13 @@ function GoogleIcon() {
 function mapFirebaseError(code) {
   switch (code) {
     case "auth/popup-blocked":
-      return "Trình duyệt đã chặn cửa sổ đăng nhập, vui lòng cho phép popup.";
-    case "auth/cancelled-popup-request":
+      return "Trình duyệt đã chặn cửa sổ đăng nhập, vui lòng cho phép popup rồi thử lại.";
     case "auth/popup-closed-by-user":
-      return "Bạn đã đóng cửa sổ đăng nhập.";
+      return "Bạn đã đóng cửa sổ đăng nhập trước khi hoàn tất.";
+    case "auth/unauthorized-domain":
+      return "Domain này chưa được cho phép trong Firebase (Authentication > Settings > Authorized domains).";
+    case "auth/network-request-failed":
+      return "Lỗi kết nối mạng, vui lòng kiểm tra internet và thử lại.";
     default:
       return "Có lỗi xảy ra, vui lòng thử lại.";
   }
