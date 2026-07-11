@@ -17,6 +17,8 @@ const AuthContext = createContext(null);
 // Thêm/xoá email bằng cách sửa mảng dưới đây.
 const ALLOWED_EMAILS = [
   "duynk.contact@gmail.com",
+  "celinenguyen2207@gmail.com",
+  "thuuyen2207@gmail.com",
   // "email-thu-2@gmail.com", // <-- thêm email thứ 2 vào đây
 ];
 
