@@ -15,11 +15,23 @@ export default function ProtectedRoute({ children }) {
   }, [loading, user, router]);
 
   if (loading || !user) {
+    const bars = Array.from({ length: 12 });
     return (
       <div className="flex min-h-screen items-center justify-center bg-brand-50">
-        <div className="flex flex-col items-center gap-3 text-brand-600">
-          <span className="text-3xl animate-pulse">💜</span>
-          <p className="font-body text-sm">Đang tải...</p>
+        <div className="relative flex h-24 w-24 items-center justify-center">
+          {bars.map((_, i) => (
+            <span
+              key={i}
+              className="spinner-dial-bar-wrap"
+              style={{ transform: `rotate(${i * 30}deg)` }}
+            >
+              <span
+                className="spinner-dial-bar"
+                style={{ animationDelay: `${(-(12 - i) / 12).toFixed(3)}s` }}
+              />
+            </span>
+          ))}
+          <span className="relative z-10 text-3xl">💜</span>
         </div>
       </div>
     );
