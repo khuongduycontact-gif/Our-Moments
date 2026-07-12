@@ -38,6 +38,7 @@ function MomentDetail() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
+  const [memorialDate, setMemorialDate] = useState("");
 
   // Media đang chỉnh sửa: các mục cũ còn giữ lại + các file mới thêm vào
   const [existingMedia, setExistingMedia] = useState([]); // [{ type, url }]
@@ -70,6 +71,7 @@ function MomentDetail() {
         setTitle(m.title || "");
         setDescription(m.description || "");
         setDate(m.date || "");
+        setMemorialDate(m.memorialDate || "");
         setExistingMedia(m.media || []);
       }
       setLoading(false);
@@ -131,24 +133,34 @@ function MomentDetail() {
     setTitle(moment.title || "");
     setDescription(moment.description || "");
     setDate(moment.date || "");
+    setMemorialDate(moment.memorialDate || "");
     setEditing(true);
   }
 
   function cancelEditing() {
     setExistingMedia(moment.media || []);
     setNewItems([]);
+    setDate(moment.date || "");
+    setMemorialDate(moment.memorialDate || "");
     setEditing(false);
   }
 
   async function handleSave() {
     if (!date) {
-      setToast({ type: "error", message: "Vui lòng chọn ngày." });
+      setToast({ type: "error", message: "Vui lòng chọn ngày đăng tải." });
       return;
     }
     if (date > today) {
       setToast({
         type: "error",
-        message: "Ngày chụp không được lớn hơn ngày hiện tại.",
+        message: "Ngày đăng tải không được lớn hơn ngày hiện tại.",
+      });
+      return;
+    }
+    if (memorialDate && memorialDate > today) {
+      setToast({
+        type: "error",
+        message: "Ngày kỷ niệm không được lớn hơn ngày hiện tại.",
       });
       return;
     }
@@ -187,6 +199,7 @@ function MomentDetail() {
         title,
         description,
         date,
+        memorialDate,
         media: finalMedia,
       });
 
@@ -195,6 +208,7 @@ function MomentDetail() {
         title,
         description,
         date,
+        memorialDate,
         media: finalMedia,
       }));
       setExistingMedia(finalMedia);
@@ -296,9 +310,8 @@ function MomentDetail() {
                 <video
                   key={currentView.url}
                   src={currentView.url}
-                  className={`h-full w-full object-contain transition-opacity duration-300 ${
-                    mediaReady ? "opacity-100" : "opacity-0"
-                  }`}
+                  className={`h-full w-full object-contain transition-opacity duration-300 ${mediaReady ? "opacity-100" : "opacity-0"
+                    }`}
                   controls
                   onLoadedData={() => setMediaReady(true)}
                 />
@@ -307,9 +320,8 @@ function MomentDetail() {
                   key={currentView?.url}
                   src={currentView?.url}
                   alt={moment.title}
-                  className={`h-full w-full object-contain transition-opacity duration-300 ${
-                    mediaReady ? "opacity-100" : "opacity-0"
-                  }`}
+                  className={`h-full w-full object-contain transition-opacity duration-300 ${mediaReady ? "opacity-100" : "opacity-0"
+                    }`}
                   onLoad={() => setMediaReady(true)}
                 />
               )}
@@ -334,9 +346,8 @@ function MomentDetail() {
                       type="button"
                       onClick={() => setViewIndex(i)}
                       aria-label={`Xem mục ${i + 1}`}
-                      className={`h-2 rounded-full transition-all ${
-                        i === viewIndex ? "w-6 bg-brand-500" : "w-2 bg-brand-200"
-                      }`}
+                      className={`h-2 rounded-full transition-all ${i === viewIndex ? "w-6 bg-brand-500" : "w-2 bg-brand-200"
+                        }`}
                     />
                   ))}
                 </div>
@@ -360,10 +371,19 @@ function MomentDetail() {
               <div className="mb-2 flex items-start gap-2 text-sm text-slate-600">
                 <span>📅</span>
                 <div>
-                  <p className="text-xs text-slate-400">Ngày chụp</p>
+                  <p className="text-xs text-slate-400">Ngày đăng tải</p>
                   <p>{formatDateVN(moment.date)}</p>
                 </div>
               </div>
+              {moment.memorialDate && (
+                <div className="mb-2 flex items-start gap-2 text-sm text-slate-600">
+                  <span>💜</span>
+                  <div>
+                    <p className="text-xs text-slate-400">Ngày kỷ niệm</p>
+                    <p>{formatDateVN(moment.memorialDate)}</p>
+                  </div>
+                </div>
+              )}
               <div className="mb-4 flex items-start gap-2 text-sm text-slate-600">
                 <span>📝</span>
                 <div>
@@ -411,9 +431,8 @@ function MomentDetail() {
                       {mediaItem.type === "video" ? (
                         <video
                           src={mediaItem.url}
-                          className={`h-full w-full object-cover transition-opacity duration-300 ${
-                            isLoaded ? "opacity-100" : "opacity-0"
-                          }`}
+                          className={`h-full w-full object-cover transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"
+                            }`}
                           muted
                           onLoadedData={() => markThumbLoaded(thumbKey)}
                         />
@@ -421,9 +440,8 @@ function MomentDetail() {
                         <img
                           src={mediaItem.url}
                           alt="Ảnh trong album"
-                          className={`h-full w-full object-cover transition-opacity duration-300 ${
-                            isLoaded ? "opacity-100" : "opacity-0"
-                          }`}
+                          className={`h-full w-full object-cover transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"
+                            }`}
                           onLoad={() => markThumbLoaded(thumbKey)}
                         />
                       )}
@@ -516,11 +534,24 @@ function MomentDetail() {
                 className="w-full resize-none rounded-xl border border-brand-200 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-600">
-                Ngày chụp
-              </label>
-              <DatePicker value={date} onChange={setDate} max={today} />
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-600">
+                  Ngày đăng tải
+                </label>
+                <DatePicker value={date} onChange={setDate} max={today} />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-600">
+                  Ngày kỷ niệm (không bắt buộc)
+                </label>
+                <DatePicker
+                  value={memorialDate}
+                  onChange={setMemorialDate}
+                  max={today}
+                  placeholder="dd/mm/yyyy"
+                />
+              </div>
             </div>
 
             {uploading && (

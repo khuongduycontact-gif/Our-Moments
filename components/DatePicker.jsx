@@ -30,6 +30,34 @@ function formatVN(str) {
   return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
+// Tự thêm dấu "/" khi người dùng gõ số, giới hạn tối đa 8 chữ số (ddMMyyyy)
+function autoSlash(input) {
+  const digits = input.replace(/\D/g, "").slice(0, 8);
+  if (digits.length > 4) {
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  }
+  if (digits.length > 2) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+  return digits;
+}
+
+// Parse chuỗi dd/MM/yyyy đã gõ đầy đủ thành Date, trả về null nếu không hợp lệ
+function parseTypedDMY(str) {
+  const m = str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const dd = parseInt(m[1], 10);
+  const mm = parseInt(m[2], 10);
+  const yyyy = parseInt(m[3], 10);
+  if (mm < 1 || mm > 12 || dd < 1 || dd > 31 || yyyy < 1000) return null;
+  const d = new Date(yyyy, mm - 1, dd);
+  // Chặn ngày lăn tháng, ví dụ 31/02 -> bị JS tự đẩy sang tháng 3
+  if (d.getFullYear() !== yyyy || d.getMonth() !== mm - 1 || d.getDate() !== dd) {
+    return null;
+  }
+  return d;
+}
+
 function isSameDay(a, b) {
   return (
     a &&
@@ -55,7 +83,7 @@ function buildMonthGrid(year, month) {
 }
 
 /**
- * Bộ chọn ngày tuỳ chỉnh, thay cho <input type="date"> mặc định.
+ * Bộ chọn ngày tuỳ chỉnh: có thể gõ trực tiếp (dd/mm/yyyy) hoặc chọn qua lịch.
  * value / onChange dùng chuỗi ISO "yyyy-MM-dd" để tương thích với code cũ.
  */
 export default function DatePicker({
@@ -63,9 +91,12 @@ export default function DatePicker({
   onChange,
   max,
   min,
-  placeholder = "Chọn ngày",
+  placeholder = "dd/mm/yyyy",
 }) {
   const [open, setOpen] = useState(false);
+  const [typedText, setTypedText] = useState(() => formatVN(value));
+  const [inlineError, setInlineError] = useState("");
+
   const selectedDate = parseISO(value);
   const maxDate = parseISO(max);
   const minDate = parseISO(min);
@@ -75,6 +106,12 @@ export default function DatePicker({
   );
 
   const wrapperRef = useRef(null);
+  const errorTimeoutRef = useRef(null);
+
+  // Đồng bộ lại ô gõ khi value thay đổi từ bên ngoài (chọn qua lịch, reset form...)
+  useEffect(() => {
+    setTypedText(formatVN(value));
+  }, [value]);
 
   useEffect(() => {
     if (open) {
@@ -100,6 +137,16 @@ export default function DatePicker({
     };
   }, [open]);
 
+  useEffect(() => {
+    return () => clearTimeout(errorTimeoutRef.current);
+  }, []);
+
+  function flashError(message) {
+    setInlineError(message);
+    clearTimeout(errorTimeoutRef.current);
+    errorTimeoutRef.current = setTimeout(() => setInlineError(""), 3000);
+  }
+
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
   const days = buildMonthGrid(year, month);
@@ -113,6 +160,7 @@ export default function DatePicker({
 
   function selectDay(d) {
     if (isDisabled(d)) return;
+    setInlineError("");
     onChange(toISO(d));
     setOpen(false);
   }
@@ -120,6 +168,7 @@ export default function DatePicker({
   function goToToday() {
     if (maxDate && today > maxDate) return;
     if (minDate && today < minDate) return;
+    setInlineError("");
     onChange(toISO(today));
     setOpen(false);
   }
@@ -131,20 +180,86 @@ export default function DatePicker({
   const canGoNextMonth =
     !maxDate || new Date(year, month + 1, 1) <= new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
 
+  function handleInputChange(e) {
+    const formatted = autoSlash(e.target.value);
+    setTypedText(formatted);
+
+    if (formatted.length < 10) {
+      // Đang gõ dở, chưa đủ để kiểm tra
+      if (!formatted) setInlineError("");
+      return;
+    }
+
+    const parsed = parseTypedDMY(formatted);
+    if (!parsed) {
+      flashError("Ngày không hợp lệ.");
+      return;
+    }
+
+    let final = parsed;
+    let wasClamped = false;
+    if (maxDate && final > maxDate) {
+      final = maxDate;
+      wasClamped = true;
+    }
+    if (minDate && final < minDate) {
+      final = minDate;
+      wasClamped = true;
+    }
+
+    onChange(toISO(final));
+    if (wasClamped) {
+      setTypedText(formatVN(toISO(final)));
+      flashError("Không thể chọn ngày trong tương lai, đã tự điều chỉnh về hôm nay.");
+    } else {
+      setInlineError("");
+    }
+  }
+
+  function handleBlur() {
+    if (!typedText) {
+      // Cho phép để trống (áp dụng với các field không bắt buộc)
+      onChange("");
+      setInlineError("");
+      return;
+    }
+    const parsed = parseTypedDMY(typedText);
+    if (!parsed || (maxDate && parsed > maxDate) || (minDate && parsed < minDate)) {
+      // Gõ dở/không hợp lệ khi rời khỏi ô -> khôi phục lại giá trị hợp lệ gần nhất
+      setTypedText(formatVN(value));
+      setInlineError("");
+    }
+  }
+
   return (
     <div ref={wrapperRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className={`flex w-full items-center justify-between rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2.5 text-left text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 ${
-          open ? "border-brand-400 ring-2 ring-brand-100" : ""
-        }`}
+      <div
+        className={`flex w-full items-center gap-2 rounded-xl border bg-brand-50/40 px-4 py-2.5 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 ${open ? "border-brand-400 ring-2 ring-brand-100" : "border-brand-200"
+          }`}
       >
-        <span className={value ? "text-slate-700" : "text-slate-400"}>
-          {value ? formatVN(value) : placeholder}
-        </span>
-        <span className="text-brand-400">📅</span>
-      </button>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={typedText}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          onFocus={() => setOpen(false)}
+          placeholder={placeholder}
+          className="flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+        />
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Mở lịch chọn ngày"
+          className="text-brand-400 transition hover:text-brand-500"
+        >
+          📅
+        </button>
+      </div>
+
+      {inlineError && (
+        <p className="mt-1 text-xs text-red-500">{inlineError}</p>
+      )}
 
       {open && (
         <div className="absolute left-0 top-full z-30 mt-2 w-full min-w-[280px] rounded-2xl border border-brand-100 bg-white p-4 shadow-xl sm:w-80 animate-pop-in">
@@ -195,15 +310,14 @@ export default function DatePicker({
                   type="button"
                   onClick={() => selectDay(d)}
                   disabled={disabled}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm transition ${
-                    selected
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm transition ${selected
                       ? "bg-brand-500 font-semibold text-white shadow-sm"
                       : disabled
-                      ? "cursor-not-allowed text-slate-300"
-                      : inMonth
-                      ? "text-slate-600 hover:bg-brand-100"
-                      : "text-slate-300 hover:bg-brand-50"
-                  } ${isToday && !selected ? "ring-1 ring-inset ring-brand-300" : ""}`}
+                        ? "cursor-not-allowed text-slate-300"
+                        : inMonth
+                          ? "text-slate-600 hover:bg-brand-100"
+                          : "text-slate-300 hover:bg-brand-50"
+                    } ${isToday && !selected ? "ring-1 ring-inset ring-brand-300" : ""}`}
                 >
                   {d.getDate()}
                 </button>

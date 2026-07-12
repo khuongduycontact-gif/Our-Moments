@@ -20,6 +20,7 @@ function AddContent() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => todayISO());
+  const [memorialDate, setMemorialDate] = useState("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadIndex, setUploadIndex] = useState(0);
@@ -113,6 +114,7 @@ function AddContent() {
         title,
         description,
         date: finalDate,
+        memorialDate,
         media,
         ownerUid: user.uid,
       });
@@ -138,10 +140,10 @@ function AddContent() {
       <Toast toast={toast} />
       <div className="mx-auto max-w-xl">
         <Link
-            href="/"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm"
-          >
-            ←
+          href="/"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm"
+        >
+          ←
         </Link>
         <div className="mb-6 text-center">
           <h1 className="font-display text-2xl font-bold text-brand-700">
@@ -268,18 +270,29 @@ function AddContent() {
             </p>
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-600">
-              Ngày chụp/quay
-            </label>
-            <DatePicker
-              value={date}
-              onChange={handleDateChange}
-              max={todayISO()}
-            />
-            <p className="mt-1 text-xs text-slate-400">
-              Mặc định là ngày hôm nay. Không thể chọn ngày trong tương lai.
-            </p>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">
+                Ngày đăng tải
+              </label>
+              <DatePicker
+                value={date}
+                onChange={handleDateChange}
+                max={todayISO()}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">
+                Ngày kỷ niệm (không bắt buộc)
+              </label>
+              <DatePicker
+                value={memorialDate}
+                onChange={setMemorialDate}
+                max={todayISO()}
+                placeholder="dd/mm/yyyy"
+              />
+            </div>
           </div>
 
           {error && (
