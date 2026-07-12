@@ -530,7 +530,7 @@ function MomentDetail() {
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={3}
+                rows={6}
                 className="w-full resize-none rounded-xl border border-brand-200 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
             </div>

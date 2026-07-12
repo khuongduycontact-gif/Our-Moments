@@ -261,7 +261,7 @@ function AddContent() {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
-              rows={3}
+              rows={6}
               placeholder="Viết một chút gì đó về khoảnh khắc này..."
               className="w-full resize-none rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             />
