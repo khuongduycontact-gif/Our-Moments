@@ -543,7 +543,7 @@ function MomentDetail() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-600">
-                  Ngày kỷ niệm (không bắt buộc)
+                  Ngày kỷ niệm
                 </label>
                 <DatePicker
                   value={memorialDate}
