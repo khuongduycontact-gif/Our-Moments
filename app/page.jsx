@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import MomentsSlider from "@/components/MomentsSlider";
 import LoveCounter from "@/components/LoveCounter";
 import Toast from "@/components/Toast";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { useAuth } from "@/lib/AuthContext";
 import { getLatestMoments } from "@/lib/moments";
 import { getSiteSettings, updateHeroImage } from "@/lib/settings";
@@ -20,6 +21,7 @@ function HomeContent() {
   const [loadingMoments, setLoadingMoments] = useState(true);
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [heroUploading, setHeroUploading] = useState(false);
+  const [bgTheme, setBgTheme] = useState("purple");
   const [toast, setToast] = useState(null);
   const heroFileInputRef = useRef(null);
 
@@ -28,7 +30,23 @@ function HomeContent() {
       .then(setMoments)
       .finally(() => setLoadingMoments(false));
 
-    getSiteSettings().then((s) => setHeroImageUrl(s.heroImageUrl || ""));
+    getSiteSettings().then((s) => {
+      setHeroImageUrl(s.heroImageUrl || "");
+
+      // Đồng bộ màu nền đã lưu trên Firestore (dùng chung cho cả hai người).
+      // Nếu khác với màu đang hiển thị (đọc tạm từ localStorage lúc tải trang)
+      // thì cập nhật lại cho khớp.
+      const savedTheme = s.bgTheme || "purple";
+      setBgTheme(savedTheme);
+      if (savedTheme === "purple") {
+        document.documentElement.removeAttribute("data-theme");
+      } else {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      }
+      try {
+        localStorage.setItem("bgTheme", savedTheme);
+      } catch (e) { }
+    });
   }, []);
 
   useEffect(() => {
@@ -81,12 +99,28 @@ function HomeContent() {
             </p>
           </div>
         </div>
-        <button
-          onClick={logout}
-          className="rounded-lg border border-purple-300 bg-white px-4 py-2 text-sm font-medium text-purple-600 transition hover:bg-purple-50 hover:border-purple-400"
-        >
-          Đăng xuất
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeSwitcher
+            initialTheme={bgTheme}
+            onChanged={({ ok, themeId }) => {
+              setBgTheme(themeId);
+              setToast(
+                ok
+                  ? { type: "success", message: "Đã đổi màu nền ♡" }
+                  : {
+                    type: "error",
+                    message: "Đổi màu nền cục bộ thành công, nhưng chưa lưu được lên hệ thống.",
+                  }
+              );
+            }}
+          />
+          <button
+            onClick={logout}
+            className="rounded-lg border border-brand-300 bg-white px-4 py-2 text-sm font-medium text-brand-600 transition hover:bg-brand-50 hover:border-brand-400"
+          >
+            Đăng xuất
+          </button>
+        </div>
       </div>
 
       {/* Hero */}
@@ -94,7 +128,7 @@ function HomeContent() {
         <div>
           <p className="mb-2 text-sm text-slate-500">Chào mừng đến với</p>
           <h1 className="font-display mb-3 text-4xl font-bold text-brand-700 md:text-5xl">
-            Our Moments 💜
+            Our Moments
           </h1>
           <p className="mb-6 text-slate-500">
             Nơi lưu giữ những khoảnh khắc đẹp nhất của chúng ta ♡
@@ -126,11 +160,10 @@ function HomeContent() {
 
             {/* Overlay gợi ý đổi ảnh */}
             <div
-              className={`absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-full bg-black/50 text-white transition-opacity ${
-                heroUploading
+              className={`absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-full bg-black/50 text-white transition-opacity ${heroUploading
                   ? "opacity-100"
                   : "opacity-0 group-hover:opacity-100"
-              }`}
+                }`}
             >
               <span className="text-2xl">{heroUploading ? "⏳" : "✎"}</span>
               <span className="text-xs font-medium">
@@ -156,19 +189,19 @@ function HomeContent() {
 
       {/* Latest moments */}
       <section className="mx-auto max-w-5xl px-4 pb-10">
-<div className="mb-4 flex flex-row items-center justify-between gap-4 w-full">
-  <h2 className="font-display flex items-center gap-2 text-base md:text-lg font-semibold text-brand-700 min-w-0 truncate">
-    <span>🎞</span> 
-    <span className="truncate">Khoảnh khắc mới nhất 💜</span>
-  </h2>
-  
-  <Link
-    href="/albums"
-    className="shrink-0 rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
-  >
-    Tất cả album →
-  </Link>
-</div>
+        <div className="mb-4 flex flex-row items-center justify-between gap-4 w-full">
+          <h2 className="font-display flex items-center gap-2 text-base md:text-lg font-semibold text-brand-700 min-w-0 truncate">
+            <span>🎞</span>
+            <span className="truncate">Khoảnh khắc mới nhất 💜</span>
+          </h2>
+
+          <Link
+            href="/albums"
+            className="shrink-0 rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
+          >
+            Tất cả album →
+          </Link>
+        </div>
 
         {loadingMoments ? (
           <p className="text-sm text-slate-400">Đang tải khoảnh khắc...</p>
@@ -231,7 +264,7 @@ function HomeContent() {
       </section>
 
       <footer className="border-t border-brand-100 bg-white/60 px-4 py-6 text-center text-xs text-slate-400">
-        Created with love ♡ · Mỗi khoảnh khắc, một kỷ niệm · Mãi mãi của chúng ta ♡ · 
+        Created with love ♡ · Mỗi khoảnh khắc, một kỷ niệm · Mãi mãi của chúng ta ♡ ·
         <p>© 2026 Nguyễn Khương Duy</p>
       </footer>
     </div>

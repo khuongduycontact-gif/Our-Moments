@@ -4,7 +4,57 @@
 @tailwind components;
 @tailwind utilities;
 
-h1, h2, h3, .font-display {
+/*
+ * Bảng màu "brand" ở dạng CSS variable (R G B, cách nhau bằng dấu cách) để
+ * tailwind.config.js có thể dùng chung với opacity (rgb(var(--brand-500) / 0.4)).
+ * Đổi màu nền toàn trang chỉ cần đổi thuộc tính data-theme trên thẻ <html>.
+ */
+:root {
+  /* Mặc định: Tím */
+  --brand-50: 246 244 255;
+  --brand-100: 238 233 255;
+  --brand-200: 222 212 255;
+  --brand-300: 196 179 254;
+  --brand-400: 166 136 251;
+  --brand-500: 139 92 246;
+  --brand-600: 118 56 224;
+  --brand-700: 98 41 187;
+  --brand-800: 80 35 152;
+  --brand-900: 66 33 122;
+}
+
+html[data-theme="pink"] {
+  /* Hồng nhạt */
+  --brand-50: 253 242 248;
+  --brand-100: 252 231 243;
+  --brand-200: 251 207 232;
+  --brand-300: 249 168 212;
+  --brand-400: 244 114 182;
+  --brand-500: 236 72 153;
+  --brand-600: 219 39 119;
+  --brand-700: 190 24 93;
+  --brand-800: 157 23 77;
+  --brand-900: 131 24 67;
+}
+
+html[data-theme="red"] {
+  /* Đỏ nhạt */
+  --brand-50: 254 242 242;
+  --brand-100: 254 226 226;
+  --brand-200: 254 202 202;
+  --brand-300: 252 165 165;
+  --brand-400: 248 113 113;
+  --brand-500: 239 68 68;
+  --brand-600: 220 38 38;
+  --brand-700: 185 28 28;
+  --brand-800: 153 27 27;
+  --brand-900: 127 29 29;
+}
+
+h1,
+h2,
+h3,
+.font-display {
   font-family: "Quicksand", system-ui, sans-serif;
 }
 
@@ -16,6 +66,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -26,6 +77,7 @@ body {
     opacity: 0;
     transform: scale(0.92) translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);

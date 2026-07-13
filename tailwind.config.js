@@ -1,4 +1,17 @@
 /** @type {import('tailwindcss').Config} */
+
+// Cho phép class như bg-brand-500/40 hoạt động đúng (opacity) trong khi
+// giá trị màu gốc lại lấy từ CSS variable (--brand-500), nhờ đó có thể
+// đổi cả bộ màu "brand" lúc chạy bằng cách đổi biến CSS (xem globals.css).
+function withOpacity(variableName) {
+  return ({ opacityValue }) => {
+    if (opacityValue !== undefined) {
+      return `rgb(var(${variableName}) / ${opacityValue})`;
+    }
+    return `rgb(var(${variableName}))`;
+  };
+}
+
 module.exports = {
   content: [
     "./app/**/*.{js,jsx}",
@@ -8,16 +21,16 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          50: "#f6f4ff",
-          100: "#eee9ff",
-          200: "#ded4ff",
-          300: "#c4b3fe",
-          400: "#a688fb",
-          500: "#8b5cf6",
-          600: "#7638e0",
-          700: "#6229bb",
-          800: "#502398",
-          900: "#42217a",
+          50: withOpacity("--brand-50"),
+          100: withOpacity("--brand-100"),
+          200: withOpacity("--brand-200"),
+          300: withOpacity("--brand-300"),
+          400: withOpacity("--brand-400"),
+          500: withOpacity("--brand-500"),
+          600: withOpacity("--brand-600"),
+          700: withOpacity("--brand-700"),
+          800: withOpacity("--brand-800"),
+          900: withOpacity("--brand-900"),
         },
       },
       fontFamily: {

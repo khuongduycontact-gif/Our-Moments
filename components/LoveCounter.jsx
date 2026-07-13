@@ -32,7 +32,7 @@ export default function LoveCounter() {
   return (
     <div className="mx-auto flex max-w-fit flex-col items-center gap-1 rounded-2xl bg-white/70 px-6 py-4 shadow-sm">
       <p className="text-xs font-medium text-slate-500">
-        Yêu nhau từ ngày {formatLoveStartDateVN()} 💕
+        Ngày chúng mình chính thức {formatLoveStartDateVN()} 💕
       </p>
       <p className="font-display text-2xl font-bold text-brand-600 md:text-3xl">
         {days.toLocaleString("vi-VN")} ngày
