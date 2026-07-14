@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+import HeartIcon from "@/components/HeartIcon";
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -31,7 +32,7 @@ export default function ProtectedRoute({ children }) {
               />
             </span>
           ))}
-          <span className="relative z-10 text-3xl">💜</span>
+          <HeartIcon className="relative z-10 h-7 w-7 text-brand-500" />
         </div>
       </div>
     );

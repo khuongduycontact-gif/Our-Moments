@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import Toast from "@/components/Toast";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import DatePicker from "@/components/DatePicker";
+import HeartIcon from "@/components/HeartIcon";
 import { getMomentById, updateMoment, deleteMoment } from "@/lib/moments";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 
@@ -25,7 +25,7 @@ function formatDateVN(dateString) {
   });
 }
 
-function MomentDetail() {
+export default function MomentDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const fileInputRef = useRef(null);
@@ -84,6 +84,9 @@ function MomentDetail() {
     const t = setTimeout(() => setToast(null), 4000);
     return () => clearTimeout(t);
   }, [toast]);
+
+  // Số lượng ảnh/video của album (hiển thị trong nhãn tiêu đề trên trang)
+  const viewMediaCount = moment?.media?.length || 0;
 
   // Mỗi khi chuyển sang ảnh/video khác thì hiện lại khung loading
   useEffect(() => {
@@ -248,7 +251,7 @@ function MomentDetail() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-brand-50 text-brand-600">
+      <div className="flex flex-1 items-center justify-center text-brand-600">
         Đang tải...
       </div>
     );
@@ -256,7 +259,7 @@ function MomentDetail() {
 
   if (!moment) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-brand-50">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3">
         <p className="text-slate-500">Không tìm thấy album này.</p>
         <button
           onClick={() => router.push("/")}
@@ -272,28 +275,17 @@ function MomentDetail() {
   const currentView = viewMedia[viewIndex] || viewMedia[0];
 
   return (
-    <div className="min-h-screen bg-brand-50 px-4 py-6">
+    <>
       <Toast toast={toast} />
-      <div className="mx-auto max-w-xl">
-        {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <button
-            onClick={() => router.push("/")}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm"
-          >
-            ←
-          </button>
-          <div className="text-center">
-            <h1 className="font-display text-base font-semibold text-brand-700">
-              Chi tiết album {viewMedia.length > 1 ? `(${viewMedia.length} mục)` : ""}
-            </h1>
-            <p className="text-xs text-slate-400">{formatDateVN(moment.date)}</p>
-          </div>
-          <div className="h-9 w-9" />
-        </div>
-
+      <div className="mx-auto w-full max-w-xl flex-1 px-4 py-6">
         {!editing ? (
           <>
+            <div className="mb-3 flex items-center justify-center gap-2">
+              <p className="text-sm font-semibold uppercase tracking-wide text-brand-400">
+                Chi tiết album{viewMediaCount > 1 ? ` · ${viewMediaCount} mục` : ""}
+              </p>
+            </div>
+
             {/* Media viewer (carousel nếu có nhiều mục) - luôn cùng 1 kích thước khung */}
             <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-2xl bg-black shadow-sm">
               {/* Khung loading đẹp, hiện khi ảnh/video chưa tải xong */}
@@ -364,8 +356,9 @@ function MomentDetail() {
 
             {/* Info */}
             <div className="rounded-2xl bg-white p-5 shadow-sm">
-              <h2 className="font-display mb-2 text-lg font-semibold text-brand-700">
-                {moment.title || "Chưa có tiêu đề"} 💜
+              <h2 className="font-display mb-2 flex items-center gap-1.5 text-lg font-semibold text-brand-700">
+                {moment.title || "Chưa có tiêu đề"}
+                <HeartIcon className="h-4 w-4 shrink-0 text-brand-500" />
               </h2>
 
               <div className="mb-2 flex items-start gap-2 text-sm text-slate-600">
@@ -377,7 +370,9 @@ function MomentDetail() {
               </div>
               {moment.memorialDate && (
                 <div className="mb-2 flex items-start gap-2 text-sm text-slate-600">
-                  <span>💜</span>
+                  <span className="text-brand-500">
+                    <HeartIcon className="h-4 w-4" />
+                  </span>
                   <div>
                     <p className="text-xs text-slate-400">Ngày kỷ niệm</p>
                     <p>{formatDateVN(moment.memorialDate)}</p>
@@ -598,14 +593,6 @@ function MomentDetail() {
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
-    </div>
-  );
-}
-
-export default function MomentDetailPage() {
-  return (
-    <ProtectedRoute>
-      <MomentDetail />
-    </ProtectedRoute>
+    </>
   );
 }

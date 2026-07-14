@@ -5,8 +5,8 @@ import { updateBgTheme } from "@/lib/settings";
 
 const THEMES = [
     { id: "purple", label: "Tím", swatch: "#8b5cf6" },
-    { id: "pink", label: "Hồng nhạt", swatch: "#ec4899" },
-    { id: "red", label: "Đỏ nhạt", swatch: "#ef4444" },
+    { id: "pink", label: "Hồng", swatch: "#ec4899" },
+    { id: "red", label: "Đỏ", swatch: "#ef4444" },
 ];
 
 // Nút đổi màu nền của trang. Lựa chọn được lưu vào localStorage (áp dụng ngay,
@@ -69,13 +69,12 @@ export default function ThemeSwitcher({ initialTheme = "purple", onChanged }) {
                 onClick={() => setOpen((o) => !o)}
                 aria-label="Đổi màu nền"
                 aria-expanded={open}
-                className="flex items-center gap-2 rounded-lg border border-brand-300 bg-white px-3 py-2 text-sm font-medium text-brand-600 transition hover:bg-brand-50 hover:border-brand-400"
+                className="flex items-center gap-2 rounded-full border border-brand-300 bg-white px-2 py-2 text-sm font-medium text-brand-600 transition hover:bg-brand-50 hover:border-brand-400"
             >
                 <span
                     className="h-4 w-4 rounded-full border border-black/10"
                     style={{ backgroundColor: current.swatch }}
                 />
-                <span className="hidden sm:inline">Màu nền</span>
             </button>
 
             {open && (

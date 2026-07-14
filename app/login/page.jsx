@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+import HeartIcon from "@/components/HeartIcon";
 
 export default function LoginPage() {
   const { user, loading, authError, setAuthError, loginWithGoogle } =
@@ -46,8 +47,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-brand-50 to-white px-4">
       <div className="w-full max-w-sm rounded-3xl border border-brand-100 bg-white p-8 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-2xl text-brand-600">
-            💜
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-brand-600">
+            <HeartIcon className="h-7 w-7" />
           </div>
           <h1 className="font-display text-2xl font-bold text-brand-700">
             Our Moments

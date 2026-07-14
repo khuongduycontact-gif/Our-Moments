@@ -2,15 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import Toast from "@/components/Toast";
 import DatePicker from "@/components/DatePicker";
 import { useAuth } from "@/lib/AuthContext";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 import { createMoment } from "@/lib/moments";
-import Link from "next/link";
 
-function AddContent() {
+export default function AddPage() {
   const { user } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef(null);
@@ -136,15 +134,10 @@ function AddContent() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-50 px-4 py-10">
+    <>
       <Toast toast={toast} />
-      <div className="mx-auto max-w-xl">
-        <Link
-          href="/"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm"
-        >
-          ←
-        </Link>
+
+      <div className="mx-auto w-full max-w-xl flex-1 px-4 py-6">
         <div className="mb-6 text-center">
           <h1 className="font-display text-2xl font-bold text-brand-700">
             Thêm album mới
@@ -256,12 +249,12 @@ function AddContent() {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-600">
-              Mô tả 
+              Mô tả
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={5}
+              rows={6}
               placeholder="Viết một chút gì đó về khoảnh khắc này..."
               className="w-full resize-y rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             />
@@ -330,14 +323,6 @@ function AddContent() {
           </button>
         </form>
       </div>
-    </div>
-  );
-}
-
-export default function AddPage() {
-  return (
-    <ProtectedRoute>
-      <AddContent />
-    </ProtectedRoute>
+    </>
   );
 }

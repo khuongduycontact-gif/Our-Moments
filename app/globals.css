@@ -118,6 +118,6 @@ body {
   width: 2px;
   height: 6px;
   border-radius: 9999px;
-  background-color: #a855f7;
+  background-color: rgb(var(--brand-500));
   animation: spinner-fade 1s linear infinite;
 }
