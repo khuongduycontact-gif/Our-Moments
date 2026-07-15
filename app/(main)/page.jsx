@@ -79,18 +79,20 @@ export default function HomePage() {
         <section className="grid grid-cols-1 items-center gap-8 py-10 md:grid-cols-2 md:py-16">
           <div>
             <p className="mb-2 text-sm text-slate-500">Chào mừng đến với</p>
-            <h1 className="font-display mb-3 text-5xl font-bold text-brand-700 md:text-5xl">
+            <h1 className="font-display mb-3 text-4xl font-bold text-brand-700 md:text-5xl">
               Our Moments
             </h1>
             <p className="mb-6 text-slate-500">
               Nơi lưu giữ những khoảnh khắc đẹp nhất của chúng ta ♡
             </p>
-            <Link
-              href="/add"
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-brand-600"
-            >
-              + Thêm nội dung mới
-            </Link>
+            <div className="flex justify-center md:justify-start">
+              <Link
+                href="/add"
+                className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-brand-600"
+              >
+                + Thêm nội dung mới
+              </Link>
+            </div>
           </div>
 
           <div className="flex items-center justify-center md:justify-end">

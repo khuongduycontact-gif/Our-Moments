@@ -53,7 +53,7 @@ export default function Header({ showLogout = false }) {
             <header className="sticky top-0 z-40 flex w-full items-center justify-between gap-3 bg-brand-50/90 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-10">
                 <Link href="/" className="flex min-w-0 items-center gap-2.5">
                     <span className="shrink-0 text-2xl">💌</span>
-                    <p className="font-display truncate text-sm font-semibold leading-tight text-brand-600">
+                    <p className="font-display truncate text-lg font-semibold leading-tight text-brand-600 md:text-xl lg:text-2xl">
                         Our Moments
                     </p>
                 </Link>
