@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import MomentCard from "@/components/MomentCard";
+import FullPageLoader from "@/components/FullPageLoader";
 import { getAllMoments } from "@/lib/moments";
 
 const PAGE_SIZE = 8;
@@ -64,6 +65,10 @@ export default function AllAlbumsPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  if (loading) {
+    return <FullPageLoader />;
+  }
+
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
       <div className="mb-6 flex items-center justify-between gap-4">
@@ -81,9 +86,7 @@ export default function AllAlbumsPage() {
         </Link>
       </div>
 
-      {loading ? (
-        <p className="text-center text-sm text-slate-400">Đang tải album...</p>
-      ) : moments.length === 0 ? (
+      {moments.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-brand-200 bg-white px-6 py-10 text-center">
           <p className="text-slate-500">
             Chưa có album nào. Hãy thêm album đầu tiên của hai bạn nhé ♡

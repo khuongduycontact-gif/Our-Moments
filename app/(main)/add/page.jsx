@@ -115,6 +115,12 @@ export default function AddPage() {
         memorialDate,
         media,
         ownerUid: user.uid,
+        author: {
+          uid: user.uid,
+          email: user.email || "",
+          name: user.displayName || "",
+          photoURL: user.photoURL || "",
+        },
       });
 
       setToast({

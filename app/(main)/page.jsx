@@ -6,6 +6,7 @@ import MomentsSlider from "@/components/MomentsSlider";
 import LoveCounter from "@/components/LoveCounter";
 import Toast from "@/components/Toast";
 import HeartIcon from "@/components/HeartIcon";
+import FullPageLoader from "@/components/FullPageLoader";
 import { getLatestMoments } from "@/lib/moments";
 import { getSiteSettings, updateHeroImage } from "@/lib/settings";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
@@ -19,16 +20,35 @@ export default function HomePage() {
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [heroUploading, setHeroUploading] = useState(false);
   const [toast, setToast] = useState(null);
+  // Trạng thái loading tổng của trang: chỉ tắt khi CẢ moments lẫn site
+  // settings đều đã tải xong, để tránh hiện nội dung "nhấp nháy" từng phần.
+  const [initialLoading, setInitialLoading] = useState(true);
   const heroFileInputRef = useRef(null);
 
   useEffect(() => {
+    let momentsDone = false;
+    let settingsDone = false;
+
+    function checkAllDone() {
+      if (momentsDone && settingsDone) setInitialLoading(false);
+    }
+
     getLatestMoments(HOMEPAGE_MOMENTS_COUNT)
       .then(setMoments)
-      .finally(() => setLoadingMoments(false));
+      .finally(() => {
+        setLoadingMoments(false);
+        momentsDone = true;
+        checkAllDone();
+      });
 
-    getSiteSettings().then((s) => {
-      setHeroImageUrl(s.heroImageUrl || "");
-    });
+    getSiteSettings()
+      .then((s) => {
+        setHeroImageUrl(s.heroImageUrl || "");
+      })
+      .finally(() => {
+        settingsDone = true;
+        checkAllDone();
+      });
   }, []);
 
   useEffect(() => {
@@ -62,6 +82,10 @@ export default function HomePage() {
     } finally {
       setHeroUploading(false);
     }
+  }
+
+  if (initialLoading) {
+    return <FullPageLoader />;
   }
 
   return (

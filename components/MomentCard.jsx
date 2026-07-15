@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { getAuthorDisplay, getPersonLabel } from "@/lib/authorDisplay";
 
 function formatDateVN(dateString) {
   if (!dateString) return "Chưa có ngày";
@@ -8,10 +9,35 @@ function formatDateVN(dateString) {
   return new Date(dateString + "T00:00:00").toLocaleDateString("vi-VN");
 }
 
+// Avatar tròn nhỏ: hiện ảnh đại diện nếu có, nếu không hiện chữ cái đầu tên/email
+function MiniAvatar({ person, className = "h-5 w-5" }) {
+  const label = getPersonLabel(person);
+  const initial = label ? label.trim().charAt(0).toUpperCase() : "?";
+
+  if (person?.photoURL) {
+    return (
+      <img
+        src={person.photoURL}
+        alt={label}
+        className={`${className} shrink-0 rounded-full object-cover ring-1 ring-white`}
+      />
+    );
+  }
+  return (
+    <span
+      className={`${className} flex shrink-0 items-center justify-center rounded-full bg-brand-200 text-[10px] font-semibold text-brand-700 ring-1 ring-white`}
+    >
+      {initial}
+    </span>
+  );
+}
+
 export default function MomentCard({ moment }) {
   const media = moment.media && moment.media.length > 0 ? moment.media : [];
   const cover = media[0] || { type: moment.type, url: moment.url };
   const count = media.length;
+  const { author, editors, isGroup } = getAuthorDisplay(moment);
+  const hasBeenSeen = Array.isArray(moment.viewedBy) && moment.viewedBy.length > 0;
 
   return (
     <Link
@@ -46,6 +72,12 @@ export default function MomentCard({ moment }) {
             🖼 {count}
           </span>
         )}
+
+        {hasBeenSeen && (
+          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-brand-600 shadow-sm">
+            ✓ Đã xem
+          </span>
+        )}
       </div>
 
       {/* Thông tin */}
@@ -57,6 +89,30 @@ export default function MomentCard({ moment }) {
         <p className="mt-1 text-xs text-slate-500 text-center">
           📅 {formatDateVN(moment.date)}
         </p>
+
+        {/* Người đăng - hoặc "Nhóm tác giả" nếu có người khác email đã chỉnh sửa */}
+        {author && (
+          <div className="mt-2 flex items-center justify-center gap-1.5">
+            {isGroup ? (
+              <>
+                <span className="flex -space-x-1.5">
+                  <MiniAvatar person={author} />
+                  <MiniAvatar person={editors[0]} />
+                </span>
+                <span className="truncate text-[11px] font-medium text-slate-500">
+                  👥 Nhóm tác giả
+                </span>
+              </>
+            ) : (
+              <>
+                <MiniAvatar person={author} />
+                <span className="truncate text-[11px] text-slate-500">
+                  {getPersonLabel(author)}
+                </span>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </Link>
   );

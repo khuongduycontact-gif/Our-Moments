@@ -6,7 +6,15 @@ import Toast from "@/components/Toast";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import DatePicker from "@/components/DatePicker";
 import HeartIcon from "@/components/HeartIcon";
-import { getMomentById, updateMoment, deleteMoment } from "@/lib/moments";
+import FullPageLoader from "@/components/FullPageLoader";
+import { useAuth } from "@/lib/AuthContext";
+import { getAuthorDisplay, getPersonLabel } from "@/lib/authorDisplay";
+import {
+  getMomentById,
+  updateMoment,
+  deleteMoment,
+  markMomentViewed,
+} from "@/lib/moments";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 
 function getToday() {
@@ -28,6 +36,7 @@ function formatDateVN(dateString) {
 export default function MomentDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const fileInputRef = useRef(null);
 
   const [moment, setMoment] = useState(null);
@@ -73,10 +82,22 @@ export default function MomentDetailPage() {
         setDate(m.date || "");
         setMemorialDate(m.memorialDate || "");
         setExistingMedia(m.media || []);
+
+        // Nếu người đang xem có email KHÁC email người đã đăng album, thì
+        // đánh dấu album này là "đã xem" để người đăng biết đối phương đã xem.
+        const viewerEmail = user?.email;
+        const authorEmail = m.author?.email;
+        const alreadyViewed = Array.isArray(m.viewedBy) && m.viewedBy.includes(viewerEmail);
+        if (viewerEmail && authorEmail && viewerEmail !== authorEmail && !alreadyViewed) {
+          markMomentViewed(id, viewerEmail).catch((err) => console.error(err));
+          setMoment((prev) =>
+            prev ? { ...prev, viewedBy: [...(prev.viewedBy || []), viewerEmail] } : prev
+          );
+        }
       }
       setLoading(false);
     });
-  }, [id]);
+  }, [id, user?.email]);
 
   // Tự ẩn toast lỗi sau vài giây (toast thành công sẽ biến mất vì trang chuyển hướng)
   useEffect(() => {
@@ -198,13 +219,30 @@ export default function MomentDetailPage() {
 
       const finalMedia = [...existingMedia, ...uploadedMedia];
 
-      await updateMoment(id, {
-        title,
-        description,
-        date,
-        memorialDate,
-        media: finalMedia,
-      });
+      // Nếu người đang chỉnh sửa có email KHÁC email người đã đăng album ban
+      // đầu, ghi nhận họ là đồng tác giả -> album sẽ hiển thị "Nhóm tác giả".
+      const authorEmail = moment?.author?.email;
+      const editorInfo =
+        user?.email && authorEmail && user.email !== authorEmail
+          ? {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || "",
+            photoURL: user.photoURL || "",
+          }
+          : null;
+
+      await updateMoment(
+        id,
+        {
+          title,
+          description,
+          date,
+          memorialDate,
+          media: finalMedia,
+        },
+        editorInfo
+      );
 
       setMoment((prev) => ({
         ...prev,
@@ -213,6 +251,10 @@ export default function MomentDetailPage() {
         date,
         memorialDate,
         media: finalMedia,
+        editors:
+          editorInfo && Array.isArray(prev?.editors)
+            ? [...prev.editors.filter((e) => e.email !== editorInfo.email), editorInfo]
+            : prev?.editors || [],
       }));
       setExistingMedia(finalMedia);
       setNewItems([]);
@@ -250,11 +292,7 @@ export default function MomentDetailPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-brand-600">
-        Đang tải...
-      </div>
-    );
+    return <FullPageLoader />;
   }
 
   if (!moment) {
@@ -273,6 +311,8 @@ export default function MomentDetailPage() {
 
   const viewMedia = moment.media && moment.media.length > 0 ? moment.media : [];
   const currentView = viewMedia[viewIndex] || viewMedia[0];
+  const { author, editors, isGroup } = getAuthorDisplay(moment);
+  const hasBeenSeen = Array.isArray(moment.viewedBy) && moment.viewedBy.length > 0;
 
   return (
     <>
@@ -356,9 +396,61 @@ export default function MomentDetailPage() {
 
             {/* Info */}
             <div className="rounded-2xl bg-white p-5 shadow-sm">
-              <h2 className="font-display mb-2 flex items-center gap-1.5 text-lg font-semibold text-brand-700">
-                {moment.title || "Chưa có tiêu đề"}
-              </h2>
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <h2 className="font-display flex items-center gap-1.5 text-lg font-semibold text-brand-700">
+                  {moment.title || "Chưa có tiêu đề"}
+                </h2>
+                {hasBeenSeen && (
+                  <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-600">
+                    ✓ Đã xem
+                  </span>
+                )}
+              </div>
+
+              {author && (
+                <div className="mb-3 flex items-center gap-2 text-sm text-slate-600">
+                  {isGroup ? (
+                    <>
+                      <span className="flex -space-x-1.5">
+                        {[author, editors[0]].map((person, i) => (
+                          <span
+                            key={i}
+                            className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-200 text-[10px] font-semibold text-brand-700 ring-2 ring-white"
+                          >
+                            {person?.photoURL ? (
+                              <img
+                                src={person.photoURL}
+                                alt={getPersonLabel(person)}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              getPersonLabel(person).trim().charAt(0).toUpperCase()
+                            )}
+                          </span>
+                        ))}
+                      </span>
+                      <span className="text-xs font-medium">👥 Nhóm tác giả</span>
+                    </>
+                  ) : (
+                    <>
+                      {author.photoURL ? (
+                        <img
+                          src={author.photoURL}
+                          alt={getPersonLabel(author)}
+                          className="h-6 w-6 shrink-0 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-200 text-[10px] font-semibold text-brand-700">
+                          {getPersonLabel(author).trim().charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                      <span className="text-xs">
+                        Đăng bởi <span className="font-medium">{getPersonLabel(author)}</span>
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
 
               <div className="mb-2 flex items-start gap-2 text-sm text-slate-600">
                 <span>📅</span>
