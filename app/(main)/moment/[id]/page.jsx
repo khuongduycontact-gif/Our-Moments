@@ -358,7 +358,6 @@ export default function MomentDetailPage() {
             <div className="rounded-2xl bg-white p-5 shadow-sm">
               <h2 className="font-display mb-2 flex items-center gap-1.5 text-lg font-semibold text-brand-700">
                 {moment.title || "Chưa có tiêu đề"}
-                <HeartIcon className="h-4 w-4 shrink-0 text-brand-500" />
               </h2>
 
               <div className="mb-2 flex items-start gap-2 text-sm text-slate-600">
@@ -392,13 +391,13 @@ export default function MomentDetailPage() {
                   onClick={() => setShowDeleteConfirm(true)}
                   className="flex-1 rounded-xl border border-red-200 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50"
                 >
-                  🗑 Xoá album
+                  Xoá album
                 </button>
                 <button
                   onClick={startEditing}
                   className="flex-1 rounded-xl bg-brand-100 py-2.5 text-sm font-semibold text-brand-700 hover:bg-brand-200"
                 >
-                  ✎ Chỉnh sửa
+                  Chỉnh sửa
                 </button>
               </div>
             </div>

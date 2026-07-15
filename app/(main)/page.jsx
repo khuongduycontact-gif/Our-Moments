@@ -79,7 +79,7 @@ export default function HomePage() {
         <section className="grid grid-cols-1 items-center gap-8 py-10 md:grid-cols-2 md:py-16">
           <div>
             <p className="mb-2 text-sm text-slate-500">Chào mừng đến với</p>
-            <h1 className="font-display mb-3 text-4xl font-bold text-brand-700 md:text-5xl">
+            <h1 className="font-display mb-3 text-5xl font-bold text-brand-700 md:text-5xl">
               Our Moments
             </h1>
             <p className="mb-6 text-slate-500">
@@ -93,7 +93,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="flex justify-end items-center">
+          <div className="flex items-center justify-center md:justify-end">
             <button
               type="button"
               onClick={() => !heroUploading && heroFileInputRef.current?.click()}
