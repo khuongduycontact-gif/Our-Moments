@@ -100,7 +100,7 @@ export default function MomentCard({ moment }) {
                   <MiniAvatar person={editors[0]} />
                 </span>
                 <span className="truncate text-[11px] font-medium text-slate-500">
-                  cậu và Người yêu đã cùng nhau chia sẻ câu chuyện này
+                  Đã cùng nhau chia sẻ
                 </span>
               </>
             ) : (

@@ -429,7 +429,7 @@ export default function MomentDetailPage() {
                           </span>
                         ))}
                       </span>
-                      <span className="text-xs font-medium">cậu và Người yêu đã cùng nhau chia sẻ câu chuyện này</span>
+                      <span className="text-xs font-medium">Cậu và Người yêu đã cùng nhau chia sẻ câu chuyện này</span>
                     </>
                   ) : (
                     <>
