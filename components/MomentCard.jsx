@@ -99,9 +99,6 @@ export default function MomentCard({ moment }) {
                   <MiniAvatar person={author} />
                   <MiniAvatar person={editors[0]} />
                 </span>
-                <span className="truncate text-[11px] font-medium text-slate-500">
-                  👥 Nhóm tác giả
-                </span>
               </>
             ) : (
               <>
