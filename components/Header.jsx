@@ -58,31 +58,43 @@ export default function Header({ showLogout = false }) {
                     </p>
                 </Link>
 
-                {showLogout && (
-                    <div className="flex shrink-0 items-center gap-2">
-                        <ThemeSwitcher
-                            initialTheme={bgTheme}
-                            onChanged={({ ok, themeId }) => {
-                                setBgTheme(themeId);
-                                setToast(
-                                    ok
-                                        ? { type: "success", message: "Đã đổi màu nền ♡" }
-                                        : {
-                                            type: "error",
-                                            message:
-                                                "Đổi màu nền cục bộ thành công, nhưng chưa lưu được lên hệ thống.",
-                                        }
-                                );
-                            }}
-                        />
-                        <button
-                            onClick={logout}
-                            className="rounded-lg border border-brand-300 bg-white px-4 py-2 text-sm font-medium text-brand-600 transition hover:bg-brand-50 hover:border-brand-400"
-                        >
-                            Đăng xuất
-                        </button>
-                    </div>
-                )}
+                <div className="flex shrink-0 items-center gap-2">
+                    {/* Nút vào trang Quà tặng - hiện ở mọi trang, không chỉ trang chủ */}
+                    <Link
+                        href="/gift"
+                        aria-label="Gửi quà"
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm font-medium text-brand-600 transition hover:bg-brand-50 hover:border-brand-300"
+                    >
+                        <span className="text-xl leading-none">🎁</span>
+                        <span className="hidden sm:inline">Gửi quà</span>
+                    </Link>
+
+                    {showLogout && (
+                        <>
+                            <ThemeSwitcher
+                                initialTheme={bgTheme}
+                                onChanged={({ ok, themeId }) => {
+                                    setBgTheme(themeId);
+                                    setToast(
+                                        ok
+                                            ? { type: "success", message: "Đã đổi màu nền ♡" }
+                                            : {
+                                                type: "error",
+                                                message:
+                                                    "Đổi màu nền cục bộ thành công, nhưng chưa lưu được lên hệ thống.",
+                                            }
+                                    );
+                                }}
+                            />
+                            <button
+                                onClick={logout}
+                                className="rounded-lg border border-brand-300 bg-white px-4 py-2 text-sm font-medium text-brand-600 transition hover:bg-brand-50 hover:border-brand-400"
+                            >
+                                Đăng xuất
+                            </button>
+                        </>
+                    )}
+                </div>
             </header>
         </>
     );

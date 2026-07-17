@@ -17,7 +17,6 @@ export default function AddPage() {
   const [items, setItems] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState(() => todayISO());
   const [memorialDate, setMemorialDate] = useState("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -33,8 +32,16 @@ export default function AddPage() {
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  function handleDateChange(iso) {
-    setDate(iso);
+  // Ngày đăng tải không còn cho người dùng chọn nữa - luôn lấy đúng thời
+  // điểm hiện tại (kèm cả giờ:phút) ngay lúc bấm lưu album.
+  function nowDateAndTime() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}` };
   }
 
   // Không giới hạn dung lượng file - nhận mọi file ảnh/video được chọn
@@ -90,7 +97,7 @@ export default function AddPage() {
     setUploadIndex(0);
 
     const total = items.length;
-    const finalDate = date || todayISO();
+    const { date: finalDate, time: finalTime } = nowDateAndTime();
 
     try {
       const media = [];
@@ -112,6 +119,7 @@ export default function AddPage() {
         title,
         description,
         date: finalDate,
+        time: finalTime,
         memorialDate,
         media,
         ownerUid: user.uid,
@@ -266,29 +274,20 @@ export default function AddPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-600">
-                Ngày đăng tải
-              </label>
-              <DatePicker
-                value={date}
-                onChange={handleDateChange}
-                max={todayISO()}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-600">
-                Ngày kỷ niệm
-              </label>
-              <DatePicker
-                value={memorialDate}
-                onChange={setMemorialDate}
-                max={todayISO()}
-                placeholder="dd/mm/yyyy"
-              />
-            </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-600">
+              Ngày kỷ niệm
+            </label>
+            <DatePicker
+              value={memorialDate}
+              onChange={setMemorialDate}
+              max={todayISO()}
+              placeholder="dd/mm/yyyy"
+            />
+            <p className="mt-1.5 text-xs text-slate-400">
+              Ngày đăng tải sẽ được tự động ghi lại theo đúng thời điểm bạn lưu
+              album (kèm cả giờ:phút) nên không cần chọn.
+            </p>
           </div>
 
           {error && (

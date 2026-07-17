@@ -33,6 +33,14 @@ function formatDateVN(dateString) {
   });
 }
 
+// Ngày đăng tải hiển thị kèm giờ:phút (vd: 17/07/2026 · 14:35). Dữ liệu cũ
+// (tạo trước khi có giờ:phút) sẽ không có `time` nên chỉ hiện ngày.
+function formatDateTimeVN(dateString, timeString) {
+  const datePart = formatDateVN(dateString);
+  if (!timeString) return datePart;
+  return `${datePart} · ${timeString}`;
+}
+
 export default function MomentDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -46,7 +54,6 @@ export default function MomentDetailPage() {
   // Thông tin chung của album
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
   const [memorialDate, setMemorialDate] = useState("");
 
   // Media đang chỉnh sửa: các mục cũ còn giữ lại + các file mới thêm vào
@@ -79,7 +86,6 @@ export default function MomentDetailPage() {
       if (m) {
         setTitle(m.title || "");
         setDescription(m.description || "");
-        setDate(m.date || "");
         setMemorialDate(m.memorialDate || "");
         setExistingMedia(m.media || []);
 
@@ -156,7 +162,6 @@ export default function MomentDetailPage() {
     setNewItems([]);
     setTitle(moment.title || "");
     setDescription(moment.description || "");
-    setDate(moment.date || "");
     setMemorialDate(moment.memorialDate || "");
     setEditing(true);
   }
@@ -164,23 +169,11 @@ export default function MomentDetailPage() {
   function cancelEditing() {
     setExistingMedia(moment.media || []);
     setNewItems([]);
-    setDate(moment.date || "");
     setMemorialDate(moment.memorialDate || "");
     setEditing(false);
   }
 
   async function handleSave() {
-    if (!date) {
-      setToast({ type: "error", message: "Vui lòng chọn ngày đăng tải." });
-      return;
-    }
-    if (date > today) {
-      setToast({
-        type: "error",
-        message: "Ngày đăng tải không được lớn hơn ngày hiện tại.",
-      });
-      return;
-    }
     if (memorialDate && memorialDate > today) {
       setToast({
         type: "error",
@@ -232,12 +225,13 @@ export default function MomentDetailPage() {
           }
           : null;
 
+      // Lưu ý: KHÔNG gửi `date`/`time` lên đây - ngày giờ đăng tải chỉ được
+      // ghi nhận đúng 1 lần lúc tạo album và không cho phép chỉnh sửa sau đó.
       await updateMoment(
         id,
         {
           title,
           description,
-          date,
           memorialDate,
           media: finalMedia,
         },
@@ -248,7 +242,6 @@ export default function MomentDetailPage() {
         ...prev,
         title,
         description,
-        date,
         memorialDate,
         media: finalMedia,
         editors:
@@ -456,7 +449,7 @@ export default function MomentDetailPage() {
                 <span>📅</span>
                 <div>
                   <p className="text-xs text-slate-400">Ngày đăng tải</p>
-                  <p>{formatDateVN(moment.date)}</p>
+                  <p>{formatDateTimeVN(moment.date, moment.time)}</p>
                 </div>
               </div>
               {moment.memorialDate && (
@@ -625,7 +618,12 @@ export default function MomentDetailPage() {
                 <label className="mb-1 block text-sm font-medium text-slate-600">
                   Ngày đăng tải
                 </label>
-                <DatePicker value={date} onChange={setDate} max={today} />
+                <div className="flex h-[42px] items-center rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-500">
+                  {formatDateTimeVN(moment.date, moment.time)}
+                </div>
+                <p className="mt-1.5 text-xs text-slate-400">
+                  Ngày giờ đăng tải không thể chỉnh sửa.
+                </p>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-600">
