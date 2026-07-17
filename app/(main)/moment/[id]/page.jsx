@@ -105,10 +105,10 @@ export default function MomentDetailPage() {
     });
   }, [id, user?.email]);
 
-  // Tự ẩn toast lỗi sau vài giây (toast thành công sẽ biến mất vì trang chuyển hướng)
+  // Tự ẩn toast sau 1s
   useEffect(() => {
-    if (!toast || toast.type !== "error") return;
-    const t = setTimeout(() => setToast(null), 4000);
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 1000);
     return () => clearTimeout(t);
   }, [toast]);
 

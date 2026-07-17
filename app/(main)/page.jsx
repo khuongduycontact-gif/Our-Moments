@@ -52,8 +52,8 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (!toast || toast.type !== "error") return;
-    const t = setTimeout(() => setToast(null), 4000);
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 1000);
     return () => clearTimeout(t);
   }, [toast]);
 
