@@ -423,8 +423,7 @@ export default function GiftPage() {
                             >
                                 <div>
                                     <p className="mb-3 text-xs text-slate-400">
-                                        Chọn 1 sticker và viết lời chúc nho nhỏ, quà sẽ được lưu lại
-                                        trong lịch sử của cả hai người.
+                                        Chọn 1 sticker và viết lời chúc nho nhỏ, quà của bạn và người yêu sẽ được lưu lại hết 24h cùng ngày...
                                     </p>
 
                                     {/* Sticker đang chọn - hiển thị để xem trước */}
@@ -445,7 +444,7 @@ export default function GiftPage() {
                                             type="text"
                                             value={gifQuery}
                                             onChange={(e) => setGifQuery(e.target.value)}
-                                            placeholder="Tìm sticker (vd: yêu, hoa, chúc mừng...)"
+                                            placeholder="Tìm sticker (gửi những điều đáng yêu đến người yêu của bạn nhé...)"
                                             className="mb-3 w-full rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                                         />
 
