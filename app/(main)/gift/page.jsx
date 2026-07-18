@@ -235,17 +235,10 @@ export default function GiftPage() {
             <Toast toast={toast} />
 
             <div className="mx-auto w-full max-w-xl flex-1 px-4 py-6">
-                <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="mb-4 flex items-center justify-center gap-3">
                     <h1 className="font-display text-2xl font-bold text-brand-700">
                         Quà tặng ♡
                     </h1>
-                    <button
-                        type="button"
-                        onClick={() => router.push("/")}
-                        className="shrink-0 rounded-lg border border-brand-200 bg-white px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50"
-                    >
-                        ← Về trang chủ
-                    </button>
                 </div>
 
                 {/* Hộp quà nổi bật ở đầu trang - mặc định là quà mới nhất mà đối
@@ -416,7 +409,7 @@ export default function GiftPage() {
                                 <div>
                                     <p className="mb-3 text-xs text-slate-400">
                                         Chọn 1 sticker và viết lời chúc nho nhỏ, quà sẽ được lưu lại
-                                        trong lịch sử của cả hai người.
+                                        đến 24h cùng ngày.
                                     </p>
 
                                     {/* Sticker đang chọn - hiển thị để xem trước */}
@@ -433,7 +426,7 @@ export default function GiftPage() {
                                             type="text"
                                             value={gifQuery}
                                             onChange={(e) => setGifQuery(e.target.value)}
-                                            placeholder="Tìm sticker (vd: yêu, hoa, chúc mừng...)"
+                                            placeholder="Tìm sticker (chủ đề mà bạn muốn gửi cho đối phương...)"
                                             className="mb-3 w-full rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                                         />
 
