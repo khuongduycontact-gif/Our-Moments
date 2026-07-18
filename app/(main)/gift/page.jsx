@@ -465,17 +465,10 @@ export default function GiftPage() {
                                                 )}
                                             </div>
                                         )}
-
-                                        <p className="mt-2 text-[11px] text-slate-400">
-                                            Sticker được cung cấp bởi GIPHY.
-                                        </p>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="mb-1 block text-sm font-medium text-slate-600">
-                                        Lời chúc
-                                    </label>
                                     <textarea
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
