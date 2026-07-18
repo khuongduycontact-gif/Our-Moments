@@ -145,16 +145,8 @@ export default function GiftPage() {
         setOpenedGift(gift);
         if (!gift.opened) markGiftOpened(gift.id);
 
-        // Cuộn tới hộp quà, có trừ đi chiều cao của header (đang "sticky" đè
-        // lên đầu trang) để phần trên của hộp quà không bị header che mất.
-        const heroEl = heroRef.current;
-        if (heroEl) {
-            const headerEl = document.querySelector("header");
-            const headerHeight = headerEl?.getBoundingClientRect().height || 0;
-            const top =
-                heroEl.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
-            window.scrollTo({ top, behavior: "smooth" });
-        }
+        // Luôn cuộn thẳng về đầu trang để thấy trọn hộp quà vừa mở.
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     useEffect(() => {
@@ -423,19 +415,16 @@ export default function GiftPage() {
                             >
                                 <div>
                                     <p className="mb-3 text-xs text-slate-400">
-                                        Chọn 1 sticker và viết lời chúc nho nhỏ, quà của bạn và người yêu sẽ được lưu lại hết 24h cùng ngày...
+                                        Chọn 1 sticker và viết lời chúc nho nhỏ, quà sẽ được lưu lại
+                                        trong lịch sử của cả hai người.
                                     </p>
 
                                     {/* Sticker đang chọn - hiển thị để xem trước */}
-                                    <div className="mb-4 flex h-40 items-center justify-center rounded-2xl bg-brand-50/70 py-4">
+                                    <div className="mb-4 flex items-center justify-center rounded-2xl bg-brand-50/70 py-4">
                                         {sticker ? (
-                                            <img
-                                                src={sticker}
-                                                alt="Sticker đã chọn"
-                                                className="h-32 w-32 object-contain"
-                                            />
+                                            <img src={sticker} alt="Sticker đã chọn" className="h-20 w-20 object-contain" />
                                         ) : (
-                                            <span className="text-7xl leading-none opacity-30">🎁</span>
+                                            <span className="text-4xl leading-none opacity-30">🎁</span>
                                         )}
                                     </div>
 
@@ -444,7 +433,7 @@ export default function GiftPage() {
                                             type="text"
                                             value={gifQuery}
                                             onChange={(e) => setGifQuery(e.target.value)}
-                                            placeholder="Tìm sticker (gửi những điều đáng yêu đến người yêu của bạn nhé...)"
+                                            placeholder="Tìm sticker (vd: yêu, hoa, chúc mừng...)"
                                             className="mb-3 w-full rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                                         />
 
@@ -483,10 +472,17 @@ export default function GiftPage() {
                                                 )}
                                             </div>
                                         )}
+
+                                        <p className="mt-2 text-[11px] text-slate-400">
+                                            Sticker được cung cấp bởi GIPHY.
+                                        </p>
                                     </div>
                                 </div>
 
                                 <div>
+                                    <label className="mb-1 block text-sm font-medium text-slate-600">
+                                        Lời chúc
+                                    </label>
                                     <textarea
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
