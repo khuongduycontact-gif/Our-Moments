@@ -621,9 +621,6 @@ export default function MomentDetailPage() {
                 <div className="flex h-[42px] items-center rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-500">
                   {formatDateTimeVN(moment.date, moment.time)}
                 </div>
-                <p className="mt-1.5 text-xs text-slate-400">
-                  Ngày giờ đăng tải không thể chỉnh sửa.
-                </p>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-600">

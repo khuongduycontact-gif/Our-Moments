@@ -285,8 +285,7 @@ export default function AddPage() {
               placeholder="dd/mm/yyyy"
             />
             <p className="mt-1.5 text-xs text-slate-400">
-              Ngày đăng tải sẽ được tự động ghi lại theo đúng thời điểm bạn lưu
-              album (kèm cả giờ:phút) nên không cần chọn.
+              Ngày đăng tải sẽ được tự động ghi lại theo đúng thời gian hiện tại.
             </p>
           </div>
 
