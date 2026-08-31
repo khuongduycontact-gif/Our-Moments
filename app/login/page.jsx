@@ -51,7 +51,7 @@ export default function LoginPage() {
             <HeartIcon className="h-7 w-7" />
           </div>
           <h1 className="font-display text-2xl font-bold text-brand-700">
-            Our Moments
+            The Love Chapter
           </h1>
           <p className="mt-1 text-sm text-slate-500">
             Đăng nhập để xem lại những kỷ niệm của chúng ta

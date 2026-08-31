@@ -2,7 +2,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 
 export const metadata = {
-    title: "Our Moments",
+    title: "The Love Chapter",
     description: "Nơi lưu giữ những khoảnh khắc đẹp nhất của chúng ta",
     icons: {
         icon: "/heart.png",

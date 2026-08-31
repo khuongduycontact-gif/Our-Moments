@@ -104,7 +104,7 @@ export default function HomePage() {
           <div>
             <p className="mb-2 text-sm text-slate-500">Chào mừng đến với</p>
             <h1 className="font-display mb-3 text-4xl font-bold text-brand-700 md:text-5xl">
-              Our Moments
+              The Love Chapter
             </h1>
             <p className="mb-6 text-slate-500">
               Nơi lưu giữ những khoảnh khắc đẹp nhất của chúng ta ♡

@@ -1,4 +1,4 @@
-# Our Moments 💜
+# TheLoveChapter: 💜
 
 Website lưu giữ kỷ niệm cho hai người, xây bằng **Next.js (App Router)**.
 - **Đăng nhập**: Firebase Authentication (email/mật khẩu)

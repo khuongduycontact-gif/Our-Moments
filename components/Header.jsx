@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/AuthContext";
 
 /**
  * Header dùng chung cho mọi trang (trừ trang /login).
- * - Luôn hiện logo "💌 Our Moments" ở bên trái, bấm vào để về trang chủ.
+ * - Luôn hiện logo "💌 The Love Chapter" ở bên trái, bấm vào để về trang chủ.
  * - Bên phải là khối thông tin tài khoản (ảnh đại diện + tên + email),
  *   bấm vào sẽ mở dropdown gồm "Gửi quà" và "Đăng xuất".
  * - Khối tài khoản này hiển thị GIỐNG NHAU trên toàn bộ trang web (không
@@ -57,7 +57,7 @@ export default function Header() {
             <Link href="/" className="flex min-w-0 items-center gap-2.5">
                 <span className="shrink-0 text-2xl">💌</span>
                 <p className="font-display truncate text-lg font-semibold leading-tight text-brand-600 md:text-xl lg:text-2xl">
-                    Our Moments
+                    The Love Chapter
                 </p>
             </Link>
 
