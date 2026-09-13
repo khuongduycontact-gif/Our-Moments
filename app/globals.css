@@ -10,7 +10,21 @@
  * Đổi màu nền toàn trang chỉ cần đổi thuộc tính data-theme trên thẻ <html>.
  */
 :root {
-  /* Mặc định: Tím */
+  /* Mặc định: Hồng nhạt */
+  --brand-50: 253 242 248;
+  --brand-100: 252 231 243;
+  --brand-200: 251 207 232;
+  --brand-300: 249 168 212;
+  --brand-400: 244 114 182;
+  --brand-500: 236 72 153;
+  --brand-600: 219 39 119;
+  --brand-700: 190 24 93;
+  --brand-800: 157 23 77;
+  --brand-900: 131 24 67;
+}
+
+html[data-theme="purple"] {
+  /* Tím */
   --brand-50: 246 244 255;
   --brand-100: 238 233 255;
   --brand-200: 222 212 255;
@@ -178,4 +192,28 @@ body {
 
 .animate-gift-bounce {
   animation: gift-box-bounce 1.6s ease-in-out infinite;
+}
+
+/* Thanh scroll mảnh, màu theo brand hiện tại — dùng cho danh sách
+   "Khoảnh khắc đáng nhớ" ở trang chủ khi nội dung dài hơn khung hiển thị. */
+.scrollbar-thin-brand {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--brand-200)) transparent;
+}
+
+.scrollbar-thin-brand::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin-brand::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin-brand::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--brand-200));
+  border-radius: 9999px;
+}
+
+.scrollbar-thin-brand::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--brand-300));
 }

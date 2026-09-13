@@ -9,14 +9,9 @@ import Toast from "@/components/Toast";
 import HeartIcon from "@/components/HeartIcon";
 import FullPageLoader from "@/components/FullPageLoader";
 import { CameraIcon } from "@/components/Icons";
-import { getLatestMoments } from "@/lib/moments";
+import { getAllMoments } from "@/lib/moments";
 import { getSiteSettings, updateHeroImage } from "@/lib/settings";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
-
-// Lấy nhiều hơn 4 để có đủ dữ liệu cho khối "Album nổi bật" + "Khoảnh khắc đáng nhớ"
-const HOMEPAGE_MOMENTS_COUNT = 20;
-// Số khoảnh khắc hiện trong danh sách "Khoảnh khắc đáng nhớ" (không tính album nổi bật)
-const LIST_COUNT = 4;
 
 export default function HomePage() {
   const [moments, setMoments] = useState([]);
@@ -37,7 +32,7 @@ export default function HomePage() {
       if (momentsDone && settingsDone) setInitialLoading(false);
     }
 
-    getLatestMoments(HOMEPAGE_MOMENTS_COUNT)
+    getAllMoments()
       .then(setMoments)
       .finally(() => {
         setLoadingMoments(false);
@@ -93,7 +88,9 @@ export default function HomePage() {
   }
 
   const featuredMoment = moments[0] || null;
-  const listMoments = moments.slice(1, 1 + LIST_COUNT);
+  // Hiện toàn bộ khoảnh khắc còn lại (trừ album nổi bật), danh sách sẽ tự
+  // scroll dọc bên trong khối thay vì làm phình chiều cao cả trang.
+  const listMoments = moments.slice(1);
 
   return (
     <>
@@ -211,7 +208,7 @@ export default function HomePage() {
                     Chưa có khoảnh khắc nào khác.
                   </p>
                 ) : (
-                  <div className="flex flex-col gap-0.5">
+                  <div className="scrollbar-thin-brand flex max-h-[420px] flex-col gap-0.5 overflow-y-auto pr-1">
                     {listMoments.map((m) => (
                       <MomentListItem key={m.id} moment={m} />
                     ))}
