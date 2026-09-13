@@ -12,7 +12,7 @@ const THEMES = [
 // Nút đổi màu nền của trang. Lựa chọn được lưu vào localStorage (áp dụng ngay,
 // không nháy màu khi tải lại trang) và đồng bộ lên Firestore để dùng chung
 // giữa cả hai người.
-export default function ThemeSwitcher({ initialTheme = "purple", onChanged }) {
+export default function ThemeSwitcher({ initialTheme = "pink", onChanged }) {
     const [open, setOpen] = useState(false);
     const [theme, setTheme] = useState(initialTheme);
     const wrapRef = useRef(null);

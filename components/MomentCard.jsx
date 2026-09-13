@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { getAuthorDisplay, getPersonLabel } from "@/lib/authorDisplay";
-import { setMomentFavorite } from "@/lib/moments";
-import { CalendarIcon, CheckIcon, HeartOutlineIcon } from "@/components/Icons";
-import HeartIcon from "@/components/HeartIcon";
+import { CalendarIcon, CheckIcon } from "@/components/Icons";
 
 function formatDateVN(dateString) {
   if (!dateString) return "Chưa có ngày";
@@ -36,33 +33,12 @@ function MiniAvatar({ person, className = "h-5 w-5" }) {
   );
 }
 
-export default function MomentCard({ moment, onFavoriteChange }) {
+export default function MomentCard({ moment }) {
   const media = moment.media && moment.media.length > 0 ? moment.media : [];
   const cover = media[0] || { type: moment.type, url: moment.url };
   const count = media.length;
   const { author, editors, isGroup } = getAuthorDisplay(moment);
   const hasBeenSeen = Array.isArray(moment.viewedBy) && moment.viewedBy.length > 0;
-
-  const [favorite, setFavorite] = useState(!!moment.favorite);
-  const [savingFavorite, setSavingFavorite] = useState(false);
-
-  async function handleToggleFavorite(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (savingFavorite) return;
-    const next = !favorite;
-    setFavorite(next);
-    setSavingFavorite(true);
-    try {
-      await setMomentFavorite(moment.id, next);
-      onFavoriteChange?.(moment.id, next);
-    } catch (err) {
-      console.error(err);
-      setFavorite(!next); // rollback nếu lưu thất bại
-    } finally {
-      setSavingFavorite(false);
-    }
-  }
 
   return (
     <Link
@@ -104,20 +80,6 @@ export default function MomentCard({ moment, onFavoriteChange }) {
             Đã xem
           </span>
         )}
-
-        <button
-          type="button"
-          onClick={handleToggleFavorite}
-          aria-label={favorite ? "Bỏ yêu thích" : "Đánh dấu yêu thích"}
-          aria-pressed={favorite}
-          className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-rose-500 opacity-0 shadow-sm transition group-hover:opacity-100 hover:bg-white aria-pressed:opacity-100"
-        >
-          {favorite ? (
-            <HeartIcon className="h-3.5 w-3.5" />
-          ) : (
-            <HeartOutlineIcon className="h-3.5 w-3.5" />
-          )}
-        </button>
       </div>
 
       {/* Thông tin */}

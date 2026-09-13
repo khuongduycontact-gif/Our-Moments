@@ -8,17 +8,27 @@ import MomentListItem from "@/components/MomentListItem";
 import Toast from "@/components/Toast";
 import HeartIcon from "@/components/HeartIcon";
 import FullPageLoader from "@/components/FullPageLoader";
+import WelcomeFlowers from "@/components/WelcomeFlowers";
 import { CameraIcon } from "@/components/Icons";
+import { useAuth } from "@/lib/AuthContext";
 import { getAllMoments } from "@/lib/moments";
 import { getSiteSettings, updateHeroImage } from "@/lib/settings";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 
+// Tiền tố key lưu trong localStorage để nhớ tài khoản nào đã xem hiệu ứng
+// chào mừng rồi, tránh hiện lại ở những lần đăng nhập sau.
+const WELCOME_SEEN_KEY_PREFIX = "loveChapter:welcomeSeen:";
+// Thời gian hiệu ứng thả hoa hiển thị trước khi tự ẩn (mili-giây)
+const WELCOME_DURATION_MS = 4200;
+
 export default function HomePage() {
+  const { user } = useAuth();
   const [moments, setMoments] = useState([]);
   const [loadingMoments, setLoadingMoments] = useState(true);
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [heroUploading, setHeroUploading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(false);
   // Trạng thái loading tổng của trang: chỉ tắt khi CẢ moments lẫn site
   // settings đều đã tải xong, để tránh hiện nội dung "nhấp nháy" từng phần.
   const [initialLoading, setInitialLoading] = useState(true);
@@ -55,6 +65,28 @@ export default function HomePage() {
     const t = setTimeout(() => setToast(null), 1000);
     return () => clearTimeout(t);
   }, [toast]);
+
+  // Hiện hiệu ứng thả hoa chào mừng đúng 1 lần vào lần đầu đăng nhập của
+  // mỗi tài khoản (đánh dấu bằng localStorage theo uid, không hiện lại ở
+  // những lần đăng nhập sau trên cùng thiết bị).
+  useEffect(() => {
+    if (!user) return;
+    const key = `${WELCOME_SEEN_KEY_PREFIX}${user.uid}`;
+    try {
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, "1");
+        setShowWelcome(true);
+      }
+    } catch (e) {
+      // Bỏ qua nếu trình duyệt chặn localStorage (chế độ ẩn danh...)
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!showWelcome) return;
+    const t = setTimeout(() => setShowWelcome(false), WELCOME_DURATION_MS);
+    return () => clearTimeout(t);
+  }, [showWelcome]);
 
   async function handleHeroFileChange(e) {
     const file = e.target.files?.[0];
@@ -94,6 +126,7 @@ export default function HomePage() {
 
   return (
     <>
+      {showWelcome && <WelcomeFlowers />}
       <Toast toast={toast} />
 
       {/*

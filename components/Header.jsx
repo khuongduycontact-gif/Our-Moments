@@ -7,8 +7,6 @@ import { useAuth } from "@/lib/AuthContext";
 import {
     HomeIcon,
     CameraIcon,
-    PencilIcon,
-    UsersIcon,
     SearchIcon,
     ChevronDownIcon,
 } from "@/components/Icons";
@@ -16,9 +14,11 @@ import {
 /**
  * Header dùng chung cho mọi trang (trừ trang /login).
  * - Logo "💌 The Love Chapter" bên trái, bấm vào để về trang chủ.
- * - Thanh điều hướng chính ở giữa: Trang chủ / Album / Bài viết / Về chúng mình
- *   (giao diện mới). Ẩn trên màn hình nhỏ để tránh rối, chỉ còn logo + tài khoản.
- * - Bên phải: nút tìm kiếm nhanh (điều hướng sang /albums?q=...) và khối
+ * - Thanh điều hướng chính ở giữa: Trang chủ / Album (giao diện mới).
+ *   Ẩn trên màn hình nhỏ để tránh rối, chỉ còn logo + tài khoản.
+ * - Bên phải: nút tìm kiếm nhanh (điều hướng sang /albums?q=...) — CHỈ hiện
+ *   khi đang ở trong phần Album (trang /albums, /moment/[id] hoặc /add),
+ *   ẩn ở các trang khác vì không có gì để tìm — và khối
  *   tài khoản (ảnh đại diện + tên + email), bấm vào mở dropdown "Gửi quà" / "Đăng xuất".
  * - Khối tài khoản hiển thị GIỐNG NHAU trên toàn bộ trang web.
  * - Header dùng `sticky top-0` để luôn đứng yên 1 chỗ khi cuộn trang.
@@ -30,18 +30,6 @@ const NAV_ITEMS = [
         label: "Album",
         icon: CameraIcon,
         match: (p) => p.startsWith("/albums") || p.startsWith("/moment") || p === "/add",
-    },
-    {
-        href: "/posts",
-        label: "Bài viết",
-        icon: PencilIcon,
-        match: (p) => p.startsWith("/posts"),
-    },
-    {
-        href: "/#about",
-        label: "Về chúng mình",
-        icon: UsersIcon,
-        match: () => false,
     },
 ];
 
@@ -111,6 +99,10 @@ export default function Header() {
 
     const displayName = user?.displayName || user?.email || "";
     const initial = (user?.displayName || user?.email || "?").charAt(0).toUpperCase();
+    // Chỉ hiện thanh tìm kiếm khi đang ở trong phần Album — dùng lại đúng
+    // điều kiện "active" của mục nav Album để 2 nơi luôn khớp nhau.
+    const albumNavItem = NAV_ITEMS.find((item) => item.href === "/albums");
+    const showSearch = albumNavItem ? albumNavItem.match(pathname) : false;
 
     return (
         <header className="sticky top-0 z-40 flex w-full items-center justify-between gap-3 bg-brand-50/90 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-10">
@@ -136,37 +128,39 @@ export default function Header() {
             </nav>
 
             <div className="flex shrink-0 items-center gap-2">
-                <div className="relative hidden sm:block">
-                    {searchOpen ? (
-                        <form onSubmit={handleSearchSubmit} className="flex items-center">
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                                onBlur={() => !searchValue && setSearchOpen(false)}
-                                placeholder="Tìm album theo tiêu đề..."
-                                className="w-40 rounded-full border border-brand-200 bg-white py-1.5 pl-3 pr-8 text-xs outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 md:w-56"
-                            />
+                {showSearch && (
+                    <div className="relative hidden sm:block">
+                        {searchOpen ? (
+                            <form onSubmit={handleSearchSubmit} className="flex items-center">
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    value={searchValue}
+                                    onChange={(e) => setSearchValue(e.target.value)}
+                                    onBlur={() => !searchValue && setSearchOpen(false)}
+                                    placeholder="Tìm album theo tiêu đề..."
+                                    className="w-40 rounded-full border border-brand-200 bg-white py-1.5 pl-3 pr-8 text-xs outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 md:w-56"
+                                />
+                                <button
+                                    type="submit"
+                                    aria-label="Tìm kiếm"
+                                    className="absolute right-2 text-brand-400 hover:text-brand-600"
+                                >
+                                    <SearchIcon className="h-4 w-4" />
+                                </button>
+                            </form>
+                        ) : (
                             <button
-                                type="submit"
+                                type="button"
+                                onClick={() => setSearchOpen(true)}
                                 aria-label="Tìm kiếm"
-                                className="absolute right-2 text-brand-400 hover:text-brand-600"
+                                className="flex h-9 w-9 items-center justify-center rounded-full text-brand-500 transition hover:bg-white"
                             >
-                                <SearchIcon className="h-4 w-4" />
+                                <SearchIcon className="h-[18px] w-[18px]" />
                             </button>
-                        </form>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={() => setSearchOpen(true)}
-                            aria-label="Tìm kiếm"
-                            className="flex h-9 w-9 items-center justify-center rounded-full text-brand-500 transition hover:bg-white"
-                        >
-                            <SearchIcon className="h-[18px] w-[18px]" />
-                        </button>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
 
                 {user && (
                     <div className="relative shrink-0" ref={menuRef}>

@@ -1,6 +1,7 @@
-// Hoạ tiết trang trí (trái tim/hoa lá vẽ nét + ghi chú viết tay) đặt phía sau
-// nội dung chính, giống giao diện mới. Chỉ hiện từ màn hình lg trở lên để
-// không làm rối bố cục trên điện thoại. Luôn pointer-events-none.
+// Hoạ tiết trang trí (trái tim/hoa lá vẽ nét) đặt phía sau nội dung chính,
+// giống giao diện mới. Chỉ hiện từ màn hình lg trở lên để không làm rối bố
+// cục trên điện thoại. Luôn pointer-events-none. Không có chữ trên nền để
+// tránh đè/rối với nội dung chính phía trên.
 
 function DoodleHeart({ className = "" }) {
   return (
@@ -44,14 +45,8 @@ export default function PageDecor({ variant = "albums" }) {
     return (
       <div className="page-decor hidden lg:block">
         <DoodleHeart className="left-[3%] top-[30%] h-10 w-10 text-brand-200/70" />
-        <p className="font-handwriting left-[2%] top-[38%] w-44 rotate-[-4deg] text-lg leading-tight text-brand-300">
-          Cùng nhau lưu giữ những điều tuyệt vời nhất...
-        </p>
         <DoodleFlower className="bottom-[4%] left-[1%] h-28 w-20 text-brand-200/70" />
-
-        <p className="font-handwriting right-[3%] top-[8%] w-52 rotate-[3deg] text-right text-lg leading-tight text-brand-300">
-          &ldquo;Những khoảnh khắc nhỏ tạo nên hạnh phúc lớn&rdquo;
-        </p>
+        <DoodleHeart className="right-[4%] top-[8%] h-8 w-8 text-brand-200/60" />
         <DoodleHeart className="bottom-[10%] right-[4%] h-12 w-12 text-brand-200/60" />
       </div>
     );
@@ -59,18 +54,8 @@ export default function PageDecor({ variant = "albums" }) {
 
   return (
     <div className="page-decor hidden lg:block">
-      <p className="font-handwriting left-[1%] top-[6%] w-48 -rotate-[3deg] text-xl leading-tight text-brand-300">
-        Những khoảnh khắc đẹp nhất của chúng ta ♡
-      </p>
       <DoodleHeart className="right-[6%] top-[10%] h-8 w-8 text-brand-200/70" />
-
-      <div className="bottom-[8%] left-[1%] w-40 rotate-[-2deg]">
-        <p className="font-handwriting text-xl leading-tight text-brand-300">
-          Cùng nhau lưu giữ những điều tuyệt vời nhé ♡
-        </p>
-        <DoodleFlower className="mt-2 h-20 w-16 text-brand-200/70" />
-      </div>
-
+      <DoodleFlower className="bottom-[8%] left-[1%] h-20 w-16 text-brand-200/70" />
       <DoodleHeart className="bottom-[6%] right-[3%] h-16 w-16 text-brand-200/60" />
     </div>
   );
