@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/Toast";
 import DatePicker from "@/components/DatePicker";
+import PageDecor from "@/components/PageDecor";
+import {
+  ArrowLeftIcon,
+  UploadCloudIcon,
+  NoteIcon,
+  CalendarIcon,
+  SendIcon,
+} from "@/components/Icons";
 import { useAuth } from "@/lib/AuthContext";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 import { createMoment } from "@/lib/moments";
@@ -151,9 +159,20 @@ export default function AddPage() {
     <>
       <Toast toast={toast} />
 
-      <div className="mx-auto w-full max-w-xl flex-1 px-4 py-6">
-        <div className="mb-6 text-center">
-          <h1 className="font-display text-2xl font-bold text-brand-700">
+      <div className="relative mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+        <PageDecor variant="edit" />
+
+        <button
+          type="button"
+          onClick={() => router.push("/albums")}
+          className="relative mb-4 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-brand-600 shadow-sm transition hover:bg-brand-50"
+        >
+          <ArrowLeftIcon className="h-3.5 w-3.5" />
+          Quay lại
+        </button>
+
+        <div className="relative mb-6">
+          <h1 className="font-display text-3xl font-bold text-brand-700">
             Thêm album mới
           </h1>
           <p className="mt-1 text-sm text-slate-500">
@@ -164,11 +183,12 @@ export default function AddPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 rounded-2xl bg-white p-6 shadow-sm"
+          className="relative space-y-5 rounded-2xl bg-white p-6 shadow-sm"
         >
           {/* Upload */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-600">
+            <label className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+              <UploadCloudIcon className="h-4 w-4 text-brand-400" />
               Tải lên nội dung
             </label>
             <div
@@ -176,7 +196,7 @@ export default function AddPage() {
               onDrop={handleDrop}
               className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/50 px-4 py-8 text-center"
             >
-              <div className="mb-2 text-3xl text-brand-400">⬆</div>
+              <UploadCloudIcon className="mb-2 h-8 w-8 text-brand-400" />
               <p className="mb-1 text-sm text-slate-500">
                 Kéo thả ảnh/video vào đây (có thể chọn nhiều cùng lúc)
               </p>
@@ -249,7 +269,8 @@ export default function AddPage() {
 
           {/* Info */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-600">
+            <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+              <NoteIcon className="h-4 w-4 text-brand-400" />
               Tiêu đề album
             </label>
             <input
@@ -262,20 +283,28 @@ export default function AddPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-600">
-              Mô tả
-            </label>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <label className="flex items-center gap-1.5 text-sm font-medium text-slate-600">
+                <NoteIcon className="h-4 w-4 text-brand-400" />
+                Ghi chú
+              </label>
+              <span className="text-[11px] text-slate-400">
+                {description.length}/500
+              </span>
+            </div>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value.slice(0, 500))}
               rows={6}
+              maxLength={500}
               placeholder="Viết một chút gì đó về khoảnh khắc này..."
               className="w-full resize-y rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-600">
+            <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+              <CalendarIcon className="h-4 w-4 text-brand-400" />
               Ngày kỷ niệm
             </label>
             <DatePicker
@@ -312,15 +341,20 @@ export default function AddPage() {
           <button
             type="submit"
             disabled={uploading}
-            className="w-full rounded-xl bg-brand-500 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-brand-600 disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-500 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-brand-600 disabled:opacity-60"
           >
-            {uploading
-              ? `Đang tải lên... ${progress}%`
-              : `♡ Lưu album ${items.length > 0 ? `(${items.length} mục)` : ""}`}
+            {uploading ? (
+              `Đang tải lên... ${progress}%`
+            ) : (
+              <>
+                <SendIcon className="h-4 w-4" />
+                {`Lưu album ${items.length > 0 ? `(${items.length} mục)` : ""}`}
+              </>
+            )}
           </button>
           <button
             type="button"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/albums")}
             className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50"
           >
             Huỷ bỏ

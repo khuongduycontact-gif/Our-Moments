@@ -7,6 +7,14 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import DatePicker from "@/components/DatePicker";
 import HeartIcon from "@/components/HeartIcon";
 import FullPageLoader from "@/components/FullPageLoader";
+import PageDecor from "@/components/PageDecor";
+import {
+  ArrowLeftIcon,
+  CameraIcon,
+  NoteIcon,
+  CalendarIcon,
+  SendIcon,
+} from "@/components/Icons";
 import { useAuth } from "@/lib/AuthContext";
 import { getAuthorDisplay, getPersonLabel } from "@/lib/authorDisplay";
 import {
@@ -310,7 +318,11 @@ export default function MomentDetailPage() {
   return (
     <>
       <Toast toast={toast} />
-      <div className="mx-auto w-full max-w-xl flex-1 px-4 py-6">
+      <div
+        className={`relative mx-auto w-full flex-1 px-4 py-6 ${editing ? "max-w-2xl" : "max-w-xl"
+          }`}
+      >
+        {editing && <PageDecor variant="edit" />}
         {!editing ? (
           <>
             <div className="mb-3 flex items-center justify-center gap-2">
@@ -488,14 +500,43 @@ export default function MomentDetailPage() {
             </div>
           </>
         ) : (
-          <div className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
-            {/* Quản lý ảnh/video trong album */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Ảnh/video trong album ({totalMediaCount})
-              </label>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={cancelEditing}
+              className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-brand-600 shadow-sm transition hover:bg-brand-50"
+            >
+              <ArrowLeftIcon className="h-3.5 w-3.5" />
+              Quay lại
+            </button>
 
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <div className="mb-6">
+              <h1 className="font-display text-3xl font-bold text-brand-700">
+                Thêm ảnh / video
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Lưu giữ những khoảnh khắc đẹp nhất của chúng ta ♡
+              </p>
+            </div>
+
+            <div className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
+              {/* Quản lý ảnh/video trong album */}
+              <div>
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-slate-600">
+                    <CameraIcon className="h-4 w-4 text-brand-400" />
+                    Ảnh/video trong album ({totalMediaCount})
+                  </label>
+                  <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-600">
+                    Đã chọn {totalMediaCount}{" "}
+                    {existingMedia.every((m) => m.type !== "video") &&
+                      newItems.every((it) => !it.isVideo)
+                      ? "ảnh"
+                      : "mục"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {existingMedia.map((mediaItem, index) => {
                   const thumbKey = `existing-${index}-${mediaItem.url}`;
                   const isLoaded = loadedThumbs.has(thumbKey);
@@ -587,13 +628,15 @@ export default function MomentDetailPage() {
                 onChange={handlePickFile}
                 className="hidden"
               />
-              <p className="mt-2 text-xs text-slate-400">
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-400">
+                <CameraIcon className="h-3.5 w-3.5" />
                 Album phải còn lại ít nhất 1 ảnh hoặc video.
               </p>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-600">
+              <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+                <NoteIcon className="h-4 w-4 text-brand-400" />
                 Tiêu đề
               </label>
               <input
@@ -603,19 +646,28 @@ export default function MomentDetailPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-600">
-                Ghi chú
-              </label>
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-slate-600">
+                  <NoteIcon className="h-4 w-4 text-brand-400" />
+                  Ghi chú
+                </label>
+                <span className="text-[11px] text-slate-400">
+                  {description.length}/500
+                </span>
+              </div>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => setDescription(e.target.value.slice(0, 500))}
                 rows={6}
+                maxLength={500}
+                placeholder="Viết vài dòng gửi gắm cảm xúc, kỷ niệm hoặc lời nhắn cho album này..."
                 className="w-full resize-none rounded-xl border border-brand-200 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
             </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-600">
+                <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+                  <CalendarIcon className="h-4 w-4 text-brand-400" />
                   Ngày đăng tải
                 </label>
                 <div className="flex h-[42px] items-center rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-500">
@@ -623,7 +675,8 @@ export default function MomentDetailPage() {
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-600">
+                <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+                  <CalendarIcon className="h-4 w-4 text-brand-400" />
                   Ngày kỷ niệm
                 </label>
                 <DatePicker
@@ -653,8 +706,9 @@ export default function MomentDetailPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 rounded-xl bg-brand-500 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand-500 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
               >
+                <SendIcon className="h-4 w-4" />
                 {saving ? "Đang lưu..." : "Lưu thay đổi"}
               </button>
               <button
@@ -664,6 +718,7 @@ export default function MomentDetailPage() {
               >
                 Huỷ
               </button>
+            </div>
             </div>
           </div>
         )}

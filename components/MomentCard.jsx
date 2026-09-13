@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { getAuthorDisplay, getPersonLabel } from "@/lib/authorDisplay";
+import { setMomentFavorite } from "@/lib/moments";
+import { CalendarIcon, CheckIcon, HeartOutlineIcon } from "@/components/Icons";
+import HeartIcon from "@/components/HeartIcon";
 
 function formatDateVN(dateString) {
   if (!dateString) return "Chưa có ngày";
@@ -32,12 +36,33 @@ function MiniAvatar({ person, className = "h-5 w-5" }) {
   );
 }
 
-export default function MomentCard({ moment }) {
+export default function MomentCard({ moment, onFavoriteChange }) {
   const media = moment.media && moment.media.length > 0 ? moment.media : [];
   const cover = media[0] || { type: moment.type, url: moment.url };
   const count = media.length;
   const { author, editors, isGroup } = getAuthorDisplay(moment);
   const hasBeenSeen = Array.isArray(moment.viewedBy) && moment.viewedBy.length > 0;
+
+  const [favorite, setFavorite] = useState(!!moment.favorite);
+  const [savingFavorite, setSavingFavorite] = useState(false);
+
+  async function handleToggleFavorite(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (savingFavorite) return;
+    const next = !favorite;
+    setFavorite(next);
+    setSavingFavorite(true);
+    try {
+      await setMomentFavorite(moment.id, next);
+      onFavoriteChange?.(moment.id, next);
+    } catch (err) {
+      console.error(err);
+      setFavorite(!next); // rollback nếu lưu thất bại
+    } finally {
+      setSavingFavorite(false);
+    }
+  }
 
   return (
     <Link
@@ -69,30 +94,46 @@ export default function MomentCard({ moment }) {
 
         {count > 1 && (
           <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white">
-            🖼 {count}
+            📷 {count}
           </span>
         )}
 
         {hasBeenSeen && (
-          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-brand-600 shadow-sm">
-            ✓ Đã xem
+          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-brand-600 shadow-sm">
+            <CheckIcon className="h-3 w-3" />
+            Đã xem
           </span>
         )}
+
+        <button
+          type="button"
+          onClick={handleToggleFavorite}
+          aria-label={favorite ? "Bỏ yêu thích" : "Đánh dấu yêu thích"}
+          aria-pressed={favorite}
+          className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-rose-500 opacity-0 shadow-sm transition group-hover:opacity-100 hover:bg-white aria-pressed:opacity-100"
+        >
+          {favorite ? (
+            <HeartIcon className="h-3.5 w-3.5" />
+          ) : (
+            <HeartOutlineIcon className="h-3.5 w-3.5" />
+          )}
+        </button>
       </div>
 
       {/* Thông tin */}
-      <div className="p-3">
-        <h3 className="truncate text-sm font-semibold text-brand-700 text-center">
+      <div className="p-3 text-left">
+        <h3 className="truncate text-sm font-semibold text-brand-700">
           {moment.title || "Chưa có tiêu đề"}
         </h3>
 
-        <p className="mt-1 text-xs text-slate-500 text-center">
-          📅 {formatDateVN(moment.date)}
+        <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+          <CalendarIcon className="h-3 w-3 text-brand-400" />
+          {formatDateVN(moment.date)}
         </p>
 
         {/* Người đăng - hoặc "Nhóm tác giả" nếu có người khác email đã chỉnh sửa */}
         {author && (
-          <div className="mt-2 flex items-center justify-center gap-1.5">
+          <div className="mt-2 flex items-center gap-1.5">
             {isGroup ? (
               <>
                 <span className="flex -space-x-1.5">
