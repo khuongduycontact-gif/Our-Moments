@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import MomentCard from "@/components/MomentCard";
 import FullPageLoader from "@/components/FullPageLoader";
 import PageDecor from "@/components/PageDecor";
@@ -11,6 +11,7 @@ import { getAllMoments } from "@/lib/moments";
 import { ALBUM_TYPES } from "@/lib/albumTypes";
 
 const ALBUM_PAGE_SIZE = 8;
+const VALID_TYPE_KEYS = ALBUM_TYPES.map((t) => t.key);
 
 // Quy đổi giá trị thời gian của 1 moment về số mili-giây để so sánh.
 // Field chính thức lưu ngày là "date" (chuỗi ISO "YYYY-MM-DD", xem trang Thêm album).
@@ -66,15 +67,22 @@ function SidebarButton({ icon, label, count, active, onClick }) {
 }
 
 function AllAlbumsPageInner() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get("q") || "";
+
+  // Trang hiện tại, bộ lọc loại album, cách sắp xếp và từ khoá tìm kiếm được
+  // lưu ngay trên URL (vd: /albums?page=2&type=outing&sort=oldest&q=biển).
+  // Nhờ vậy khi mở 1 album rồi bấm quay lại, trình duyệt trở về đúng URL này
+  // và giữ nguyên trang đang xem thay vì về trang 1.
+  const query = searchParams.get("q") || "";
+  const sortOrder = searchParams.get("sort") === "oldest" ? "oldest" : "newest"; // "newest" | "oldest"
+  const typeParam = searchParams.get("type");
+  const filterKey = VALID_TYPE_KEYS.includes(typeParam) ? typeParam : "all";
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
 
   const [rawMoments, setRawMoments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState("newest"); // "newest" | "oldest"
-  const [filterKey, setFilterKey] = useState("all");
-  const [query, setQuery] = useState(initialQuery);
 
   useEffect(() => {
     getAllMoments()
@@ -82,10 +90,18 @@ function AllAlbumsPageInner() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Về lại trang 1 mỗi khi đổi bộ lọc / cách sắp xếp / từ khoá tìm kiếm
-  useEffect(() => {
-    setPage(1);
-  }, [filterKey, sortOrder, query]);
+  // Cập nhật URL với các thay đổi (giá trị null/rỗng = bỏ tham số đó). Dùng
+  // replace thay vì push để mỗi lần đổi trang/bộ lọc không sinh thêm 1 mục
+  // trong lịch sử, nút quay lại vẫn đi thẳng về màn hình trước đó.
+  function updateUrl(changes) {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(changes)) {
+      if (value === null || value === "") params.delete(key);
+      else params.set(key, String(value));
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }
 
   // Số album của từng loại (hiện bên cạnh nút lọc ở sidebar)
   const typeCounts = useMemo(() => {
@@ -115,17 +131,22 @@ function AllAlbumsPageInner() {
     safePage * ALBUM_PAGE_SIZE
   );
 
+  // Đổi cách sắp xếp / bộ lọc / từ khoá thì về lại trang 1
   function handleSortChange(order) {
-    setSortOrder(order);
+    updateUrl({ sort: order === "oldest" ? "oldest" : null, page: null });
   }
 
   function handleFilterChange(key) {
-    setFilterKey(key);
+    updateUrl({ type: key === "all" ? null : key, page: null });
+  }
+
+  function clearQuery() {
+    updateUrl({ q: null, page: null });
   }
 
   function goToPage(p) {
     const clamped = Math.min(Math.max(1, p), totalPages);
-    setPage(clamped);
+    updateUrl({ page: clamped === 1 ? null : clamped });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -182,7 +203,7 @@ function AllAlbumsPageInner() {
                   Kết quả tìm kiếm cho “{query}”{" "}
                   <button
                     type="button"
-                    onClick={() => setQuery("")}
+                    onClick={clearQuery}
                     className="font-medium text-brand-500 hover:underline"
                   >
                     Xoá tìm kiếm
