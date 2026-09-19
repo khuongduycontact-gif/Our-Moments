@@ -12,6 +12,7 @@ import WelcomeFlowers from "@/components/WelcomeFlowers";
 import { CameraIcon } from "@/components/Icons";
 import { useAuth } from "@/lib/AuthContext";
 import { getAllMoments } from "@/lib/moments";
+import { pickFeaturedMoment } from "@/lib/albumTypes";
 import { getSiteSettings, updateHeroImage } from "@/lib/settings";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 
@@ -119,10 +120,13 @@ export default function HomePage() {
     return <FullPageLoader />;
   }
 
-  const featuredMoment = moments[0] || null;
+  // Album nổi bật = album loại "Đi chơi" có nhiều lượt xem nhất
+  const featuredMoment = pickFeaturedMoment(moments);
   // Hiện toàn bộ khoảnh khắc còn lại (trừ album nổi bật), danh sách sẽ tự
   // scroll dọc bên trong khối thay vì làm phình chiều cao cả trang.
-  const listMoments = moments.slice(1);
+  const listMoments = featuredMoment
+    ? moments.filter((m) => m.id !== featuredMoment.id)
+    : moments;
 
   return (
     <>
@@ -206,7 +210,7 @@ export default function HomePage() {
         <section className="pb-10">
           {loadingMoments ? (
             <p className="text-sm text-slate-400">Đang tải khoảnh khắc...</p>
-          ) : !featuredMoment ? (
+          ) : moments.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-brand-200 bg-white px-6 py-10 text-center">
               <p className="text-slate-500">
                 Chưa có khoảnh khắc nào. Hãy thêm khoảnh khắc đầu tiên của hai bạn nhé ♡
@@ -220,7 +224,21 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
-              <FeaturedMoment moment={featuredMoment} />
+              {featuredMoment ? (
+                <FeaturedMoment moment={featuredMoment} />
+              ) : (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-brand-200 bg-white px-6 py-10 text-center">
+                  <p className="text-slate-500">
+                    Chưa có album “Đi chơi” nào để làm album nổi bật ♡
+                  </p>
+                  <Link
+                    href="/add"
+                    className="mt-3 inline-block text-sm font-semibold text-brand-600 hover:underline"
+                  >
+                    + Thêm album mới
+                  </Link>
+                </div>
+              )}
 
               <div className="rounded-2xl bg-white p-4 shadow-sm">
                 <div className="mb-2 flex items-center justify-between gap-2 px-1">

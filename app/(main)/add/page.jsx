@@ -5,16 +5,19 @@ import { useRouter } from "next/navigation";
 import Toast from "@/components/Toast";
 import DatePicker from "@/components/DatePicker";
 import PageDecor from "@/components/PageDecor";
+import AlbumTypePicker from "@/components/AlbumTypePicker";
 import {
   ArrowLeftIcon,
   UploadCloudIcon,
   NoteIcon,
   CalendarIcon,
   SendIcon,
+  ImageStackIcon,
 } from "@/components/Icons";
 import { useAuth } from "@/lib/AuthContext";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 import { createMoment } from "@/lib/moments";
+import { DEFAULT_ALBUM_TYPE } from "@/lib/albumTypes";
 
 export default function AddPage() {
   const { user } = useAuth();
@@ -23,6 +26,7 @@ export default function AddPage() {
 
   // Danh sách file đang chờ tải lên. Mỗi phần tử: { id, file, previewUrl, isVideo }
   const [items, setItems] = useState([]);
+  const [albumType, setAlbumType] = useState(DEFAULT_ALBUM_TYPE);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [memorialDate, setMemorialDate] = useState("");
@@ -129,6 +133,7 @@ export default function AddPage() {
         date: finalDate,
         time: finalTime,
         memorialDate,
+        albumType,
         media,
         ownerUid: user.uid,
         author: {
@@ -185,6 +190,19 @@ export default function AddPage() {
           onSubmit={handleSubmit}
           className="relative space-y-5 rounded-2xl bg-white p-6 shadow-sm"
         >
+          {/* Loại album */}
+          <div>
+            <label className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+              <ImageStackIcon className="h-4 w-4 text-brand-400" />
+              Loại album
+            </label>
+            <AlbumTypePicker
+              value={albumType}
+              onChange={setAlbumType}
+              disabled={uploading}
+            />
+          </div>
+
           {/* Upload */}
           <div>
             <label className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-600">
@@ -283,20 +301,14 @@ export default function AddPage() {
           </div>
 
           <div>
-            <div className="mb-1 flex items-center justify-between gap-2">
-              <label className="flex items-center gap-1.5 text-sm font-medium text-slate-600">
-                <NoteIcon className="h-4 w-4 text-brand-400" />
-                Ghi chú
-              </label>
-              <span className="text-[11px] text-slate-400">
-                {description.length}/500
-              </span>
-            </div>
+            <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+              <NoteIcon className="h-4 w-4 text-brand-400" />
+              Ghi chú
+            </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value.slice(0, 500))}
+              onChange={(e) => setDescription(e.target.value)}
               rows={6}
-              maxLength={500}
               placeholder="Viết một chút gì đó về khoảnh khắc này..."
               className="w-full resize-y rounded-xl border border-brand-200 bg-brand-50/40 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             />

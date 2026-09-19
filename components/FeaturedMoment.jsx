@@ -16,8 +16,9 @@ function formatDateTimeVN(dateString, timeString) {
   return `${datePart} · ${timeString}`;
 }
 
-// Khối "Album nổi bật" ở trang chủ: hiện album mới nhất kèm ảnh/video đại
-// diện + toàn bộ thông tin (người đăng, ngày đăng, ngày kỷ niệm, ghi chú).
+// Khối "Album nổi bật" ở trang chủ: hiện album loại "Đi chơi" có nhiều lượt
+// xem nhất (xem pickFeaturedMoment) kèm ảnh/video đại diện + thông tin (người
+// đăng, ngày đăng, ngày kỷ niệm, lượt xem, ghi chú).
 export default function FeaturedMoment({ moment }) {
   const media = moment.media && moment.media.length > 0 ? moment.media : [];
   const cover = media[0] || { type: moment.type, url: moment.url };
@@ -74,6 +75,10 @@ export default function FeaturedMoment({ moment }) {
               Ngày kỷ niệm: {formatDateVN(moment.memorialDate)}
             </p>
           )}
+          <p className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="w-3.5 text-center">👁</span>
+            {moment.viewCount || 0} lượt xem
+          </p>
         </div>
 
         {moment.description && (

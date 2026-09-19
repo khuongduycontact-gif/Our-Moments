@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { getAuthorDisplay, getPersonLabel } from "@/lib/authorDisplay";
+import { getAlbumType } from "@/lib/albumTypes";
 
 function formatDateVN(dateString) {
   if (!dateString) return "Chưa có ngày";
@@ -15,6 +16,7 @@ export default function MomentListItem({ moment }) {
   const cover = media[0] || { type: moment.type, url: moment.url };
   const { author } = getAuthorDisplay(moment);
   const hasBeenSeen = Array.isArray(moment.viewedBy) && moment.viewedBy.length > 0;
+  const albumType = getAlbumType(moment.albumType);
 
   return (
     <Link
@@ -51,10 +53,11 @@ export default function MomentListItem({ moment }) {
         </p>
         <p className="mt-0.5 truncate text-xs text-slate-400">
           {formatDateVN(moment.date)}
+          {author && ` · ${getPersonLabel(author)}`}
         </p>
-        {author && (
-          <p className="truncate text-xs text-slate-400">{getPersonLabel(author)}</p>
-        )}
+        <p className="truncate text-xs font-medium text-brand-500">
+          <span aria-hidden="true">{albumType.emoji}</span> {albumType.label}
+        </p>
       </div>
 
       <span className="shrink-0 text-brand-300">›</span>

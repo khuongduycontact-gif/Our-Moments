@@ -8,20 +8,25 @@ import DatePicker from "@/components/DatePicker";
 import HeartIcon from "@/components/HeartIcon";
 import FullPageLoader from "@/components/FullPageLoader";
 import PageDecor from "@/components/PageDecor";
+import AlbumTypePicker from "@/components/AlbumTypePicker";
+import PaginatedNote from "@/components/PaginatedNote";
 import {
   ArrowLeftIcon,
   CameraIcon,
   NoteIcon,
   CalendarIcon,
   SendIcon,
+  ImageStackIcon,
 } from "@/components/Icons";
 import { useAuth } from "@/lib/AuthContext";
 import { getAuthorDisplay, getPersonLabel } from "@/lib/authorDisplay";
+import { getAlbumType } from "@/lib/albumTypes";
 import {
   getMomentById,
   updateMoment,
   deleteMoment,
   markMomentViewed,
+  incrementMomentViews,
 } from "@/lib/moments";
 import { uploadFileToCloudinary } from "@/lib/uploadToCloudinary";
 
@@ -54,6 +59,10 @@ export default function MomentDetailPage() {
   const router = useRouter();
   const { user } = useAuth();
   const fileInputRef = useRef(null);
+  // Nhớ album nào đã được tính lượt xem trong lần mở trang này (và số lượt xem
+  // đang hiển thị), để không bị cộng 2 lần khi effect chạy lại (React Strict
+  // Mode ở môi trường dev chạy effect 2 lần).
+  const viewRef = useRef({ id: null, shown: 0 });
 
   const [moment, setMoment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,6 +72,7 @@ export default function MomentDetailPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [memorialDate, setMemorialDate] = useState("");
+  const [albumType, setAlbumType] = useState("outing");
 
   // Media đang chỉnh sửa: các mục cũ còn giữ lại + các file mới thêm vào
   const [existingMedia, setExistingMedia] = useState([]); // [{ type, url }]
@@ -89,12 +99,24 @@ export default function MomentDetailPage() {
   const today = getToday();
 
   useEffect(() => {
-    getMomentById(id).then((m) => {
+    getMomentById(id).then((loaded) => {
+      let m = loaded;
+
+      // Mỗi lần mở album +1 lượt xem (dùng để chọn "Album nổi bật" ở trang chủ)
+      if (m) {
+        if (viewRef.current.id !== id) {
+          viewRef.current = { id, shown: (m.viewCount || 0) + 1 };
+          incrementMomentViews(id).catch((err) => console.error(err));
+        }
+        m = { ...m, viewCount: viewRef.current.shown };
+      }
+
       setMoment(m);
       if (m) {
         setTitle(m.title || "");
         setDescription(m.description || "");
         setMemorialDate(m.memorialDate || "");
+        setAlbumType(m.albumType);
         setExistingMedia(m.media || []);
 
         // Nếu người đang xem có email KHÁC email người đã đăng album, thì
@@ -171,6 +193,7 @@ export default function MomentDetailPage() {
     setTitle(moment.title || "");
     setDescription(moment.description || "");
     setMemorialDate(moment.memorialDate || "");
+    setAlbumType(moment.albumType);
     setEditing(true);
   }
 
@@ -178,6 +201,7 @@ export default function MomentDetailPage() {
     setExistingMedia(moment.media || []);
     setNewItems([]);
     setMemorialDate(moment.memorialDate || "");
+    setAlbumType(moment.albumType);
     setEditing(false);
   }
 
@@ -241,6 +265,7 @@ export default function MomentDetailPage() {
           title,
           description,
           memorialDate,
+          albumType,
           media: finalMedia,
         },
         editorInfo
@@ -251,6 +276,7 @@ export default function MomentDetailPage() {
         title,
         description,
         memorialDate,
+        albumType,
         media: finalMedia,
         editors:
           editorInfo && Array.isArray(prev?.editors)
@@ -314,6 +340,7 @@ export default function MomentDetailPage() {
   const currentView = viewMedia[viewIndex] || viewMedia[0];
   const { author, editors, isGroup } = getAuthorDisplay(moment);
   const hasBeenSeen = Array.isArray(moment.viewedBy) && moment.viewedBy.length > 0;
+  const albumTypeInfo = getAlbumType(moment.albumType);
 
   return (
     <>
@@ -412,6 +439,16 @@ export default function MomentDetailPage() {
                 )}
               </div>
 
+              <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-600">
+                  <span aria-hidden="true">{albumTypeInfo.emoji}</span>
+                  {albumTypeInfo.label}
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  <span aria-hidden="true">👁</span> {moment.viewCount || 0} lượt xem
+                </span>
+              </div>
+
               {author && (
                 <div className="mb-3 flex items-center gap-2 text-sm text-slate-600">
                   {isGroup ? (
@@ -477,9 +514,9 @@ export default function MomentDetailPage() {
               )}
               <div className="mb-4 flex items-start gap-2 text-sm text-slate-600">
                 <span>📝</span>
-                <div>
-                  <p className="text-xs text-slate-400">Ghi chú</p>
-                  <p>{moment.description || "Chưa có ghi chú nào."}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="mb-0.5 text-xs text-slate-400">Ghi chú</p>
+                  <PaginatedNote text={moment.description} />
                 </div>
               </div>
 
@@ -635,6 +672,17 @@ export default function MomentDetailPage() {
             </div>
 
             <div>
+              <label className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+                <ImageStackIcon className="h-4 w-4 text-brand-400" />
+                Loại album
+              </label>
+              <AlbumTypePicker
+                value={albumType}
+                onChange={setAlbumType}
+                disabled={saving}
+              />
+            </div>
+            <div>
               <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-slate-600">
                 <NoteIcon className="h-4 w-4 text-brand-400" />
                 Tiêu đề
@@ -646,22 +694,16 @@ export default function MomentDetailPage() {
               />
             </div>
             <div>
-              <div className="mb-1 flex items-center justify-between gap-2">
-                <label className="flex items-center gap-1.5 text-sm font-medium text-slate-600">
-                  <NoteIcon className="h-4 w-4 text-brand-400" />
-                  Ghi chú
-                </label>
-                <span className="text-[11px] text-slate-400">
-                  {description.length}/500
-                </span>
-              </div>
+              <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+                <NoteIcon className="h-4 w-4 text-brand-400" />
+                Ghi chú
+              </label>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value.slice(0, 500))}
+                onChange={(e) => setDescription(e.target.value)}
                 rows={6}
-                maxLength={500}
                 placeholder="Viết vài dòng gửi gắm cảm xúc, kỷ niệm hoặc lời nhắn cho album này..."
-                className="w-full resize-none rounded-xl border border-brand-200 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                className="w-full resize-y rounded-xl border border-brand-200 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
             </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

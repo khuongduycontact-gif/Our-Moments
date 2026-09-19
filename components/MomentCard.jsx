@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { getAuthorDisplay, getPersonLabel } from "@/lib/authorDisplay";
+import { getAlbumType } from "@/lib/albumTypes";
 import { CalendarIcon, CheckIcon } from "@/components/Icons";
 
 function formatDateVN(dateString) {
@@ -39,6 +40,7 @@ export default function MomentCard({ moment }) {
   const count = media.length;
   const { author, editors, isGroup } = getAuthorDisplay(moment);
   const hasBeenSeen = Array.isArray(moment.viewedBy) && moment.viewedBy.length > 0;
+  const albumType = getAlbumType(moment.albumType);
 
   return (
     <Link
@@ -87,6 +89,11 @@ export default function MomentCard({ moment }) {
         <h3 className="truncate text-sm font-semibold text-brand-700">
           {moment.title || "Chưa có tiêu đề"}
         </h3>
+
+        {/* Loại album */}
+        <p className="mt-0.5 truncate text-[11px] font-medium text-brand-500">
+          <span aria-hidden="true">{albumType.emoji}</span> {albumType.label}
+        </p>
 
         <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
           <CalendarIcon className="h-3 w-3 text-brand-400" />
