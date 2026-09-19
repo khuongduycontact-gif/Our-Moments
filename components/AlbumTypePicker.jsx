@@ -2,7 +2,7 @@
 
 import { ALBUM_TYPES } from "@/lib/albumTypes";
 
-// Ô chọn loại album (Đi chơi / Câu truyện muốn kể / Vào đây để nói cho bõ tức).
+// Ô chọn loại album (Đi chơi / Những câu chuyện bla bla trên trời dưới đất muốn kể / Vào đây để nói cho bõ tức).
 // Dùng chung cho trang thêm album và form chỉnh sửa album.
 export default function AlbumTypePicker({ value, onChange, disabled = false }) {
   return (
